@@ -67,7 +67,6 @@ INDEX VERSION 1.134+D:\Capstone Project\skill-gap-analysis\.metadata\.plugins\or
 3644283743.index
 2561240640.index
 4282664087.index
-3047245607.index
 1150327253.index
 1984543131.index
 201660911.index
