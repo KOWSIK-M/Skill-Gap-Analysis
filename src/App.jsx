@@ -3,7 +3,6 @@ import Home from "./components/Home/homepage.jsx";
 import Signin from "./components/Auth/SignIn.jsx";
 import Signup from "./components/Auth/SignUp.jsx";
 import Stdashboard from "./components/StDashboard/Dashboard.jsx";
-import MySkills from "./components/StDashboard/MySkills.jsx";
 import SkillGapAnalysis from "./components/StDashboard/SkillGapAnalysis.jsx";
 import Recommendations from "./components/StDashboard/Recommendations.jsx";
 import TrainingResources from "./components/StDashboard/TrainingPlatforms.jsx";
@@ -12,6 +11,7 @@ import HrDashboard from "./components/HrDashboard/HDashboard.jsx";
 import RoleManagement from "./components/HrDashboard/RoleManagement.jsx";
 import ApplicationsReview from "./components/HrDashboard/Applications.jsx";
 import EmployeeAnalytics from "./components/HrDashboard/EmployeeAnalytics.jsx";
+import ResumeAnalysisPage from "./components/StDashboard/ResumeAnalysisPage.jsx";
 
 
 function App() {
@@ -22,7 +22,7 @@ function App() {
         <Route path="/signin" element={<Signin />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<Stdashboard />} />
-        <Route path="/myskills" element={<MySkills />} />
+        <Route path="/profile" element={<ResumeAnalysisPage />} />
         <Route path="/skillgap" element={<SkillGapAnalysis />} />
         <Route path="/recommendations" element={<Recommendations />} />
         <Route path="/training" element={<TrainingResources />} />

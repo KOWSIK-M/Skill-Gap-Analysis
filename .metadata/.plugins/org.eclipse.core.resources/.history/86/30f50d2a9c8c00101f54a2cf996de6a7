@@ -1,0 +1,5 @@
+package com.cp.workskillai.models;
+
+public class Skill {
+
+}

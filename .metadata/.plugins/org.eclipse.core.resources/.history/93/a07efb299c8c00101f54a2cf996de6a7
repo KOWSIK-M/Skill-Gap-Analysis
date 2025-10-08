@@ -1,0 +1,49 @@
+package com.cp.workskillai.models;
+
+import lombok.*;
+
+import jakarta.validation.constraints.*;
+import jakarta.persistence.Id;
+
+import java.util.List;
+
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import jakarta.*;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Document(collection = "students")
+public class Student {
+
+    @Id
+    private String id;
+
+    @NotBlank(message = "Full name is required")
+    @Size(min = 2, max = 100, message = "Name must be between 2–100 characters")
+    private String fullName;
+
+    @Email(message = "Invalid email format")
+    @NotBlank(message = "Email is required")
+    private String email;
+
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters long")
+    private String password; // 🔒 Store hashed
+
+    @NotBlank(message = "Role is required")
+    private String role;  // STUDENT, ADMIN, TRAINER
+
+    @NotBlank(message = "Department is required")
+    private String department;
+
+    private List<@NotBlank String> skills;   // ["Java", "SQL", "React"]
+
+    private List<String> enrolledTrainings;  // References to Training IDs
+
+    @Min(value = 0, message = "GPA cannot be negative")
+    @Max(value = 10, message = "GPA cannot exceed 10")
+    private Double academicScore;  // Extra academic metric
+}

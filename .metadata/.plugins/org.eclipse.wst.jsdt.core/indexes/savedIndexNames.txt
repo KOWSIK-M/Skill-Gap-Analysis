@@ -1,0 +1,7 @@
+INDEX VERSION 1.4+D:\Capstone Project\skill-gap-analysis\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+1327738399.index
+642316169.index
+977414764.index
+1802517145.index
+200899871.index
+3047245607.index
