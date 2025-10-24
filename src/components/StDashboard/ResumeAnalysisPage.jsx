@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { motion } from "framer-motion";
 import Layout from "./Layout";
 import {
@@ -23,7 +23,25 @@ import {
   Eye,
   Plus,
   History,
+  MapPin,
+  Globe,
+  GitBranch,
+  BriefcaseIcon,
+  Languages,
 } from "lucide-react";
+
+const getUserIdFromToken = (token) => {
+  if (!token) return null;
+  try {
+    // JWT tokens are in format: header.payload.signature
+    const payload = token.split(".")[1];
+    const decodedPayload = JSON.parse(atob(payload));
+    return decodedPayload.sub || decodedPayload.userId || decodedPayload.id;
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    return null;
+  }
+};
 
 // Create a context for theme
 const ThemeContext = React.createContext();
@@ -34,378 +52,125 @@ const ResumeAnalysisPage = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
   const [profileData, setProfileData] = useState({
+    // Personal Information
     fullName: "",
     email: "",
     contactNumber: "",
-    skills: [],
-    certifications: [],
+    location: "",
+    linkedInUrl: "",
+    githubUrl: "",
+    portfolioUrl: "",
+
+    // Professional Information
+    title: "",
+    summary: "",
+    technicalSkills: [],
+    softSkills: [],
+    languages: [],
+    totalExperience: "",
+
+    // Education, Experience, Certifications, Projects
     education: [],
     experience: [],
-    summary: "",
+    certifications: [],
+    projects: [],
+
+    // Settings
+    isPublic: true,
+    seekingOpportunities: true,
+    preferredRoles: [],
+    expectedSalary: "",
+    noticePeriod: "",
   });
+
   const [errors, setErrors] = useState({});
   const [resumeHistory, setResumeHistory] = useState([]);
   const [showUpload, setShowUpload] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [userId, setUserId] = useState(null);
+
+  // Get user ID from localStorage (assuming you store it after login)
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const user = JSON.parse(userData);
+      setUserId(user.id);
+      // Load user profile and resume history
+      loadUserProfile(user.id);
+      loadResumeHistory(user.id);
+    }
+  }, []);
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
   };
 
-  // Gemini 2.5 Flash API Service
-  const GeminiService = {
-    async analyzeResume(file) {
-      try {
-        // Extract text from the file
-        const fileText = await this.extractTextFromFile(file);
+  // Load user profile from backend
+  // In ResumeAnalysisPage.jsx, update all API calls to use the proper authentication
 
-        const API_KEY =
-          import.meta.env.VITE_GEMINI_API_KEY ||
-          "AIzaSyBLlFkcGC_qqVW_ABV3jTeFsIheYq0YTXU";
-
-        // Correct API URL for Gemini 1.5 Flash (2.5 flash might not exist)
-        const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
-
-        const prompt = `
-        Analyze this resume text and extract information. Return ONLY valid JSON format.
-        
-        RESUME CONTENT:
-        ${fileText.substring(0, 3000)}  // Limit text to avoid token limits
-
-        Extract information in this exact JSON structure:
+  // Load user profile
+  const loadUserProfile = async (userId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:2090/api/profile/${userId}`,
         {
-          "fullName": "extracted full name or empty string",
-          "email": "extracted email or empty string", 
-          "contactNumber": "extracted phone number or empty string",
-          "skills": ["array of technical and soft skills"],
-          "certifications": ["array of certifications"],
-          "education": [
-            {
-              "degree": "degree name or empty",
-              "institution": "institution name or empty", 
-              "year": "graduation year or empty"
-            }
-          ],
-          "experience": [
-            {
-              "position": "job position or empty",
-              "company": "company name or empty", 
-              "duration": "employment duration or empty",
-              "description": "job description or empty"
-            }
-          ],
-          "summary": "professional summary or empty string"
+          method: "GET",
+          credentials: "include",
         }
+      );
 
-        IMPORTANT:
-        - Return ONLY valid JSON, no other text
-        - Use empty strings for missing fields
-        - Use empty arrays for missing arrays
-        - Ensure all brackets and quotes are properly closed
-        - Remove any trailing commas
-      `;
-
-        console.log("Sending request to Gemini API...");
-
-        const response = await fetch(API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: prompt,
-                  },
-                ],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.1,
-              topK: 40,
-              topP: 0.95,
-              maxOutputTokens: 2048,
-            },
-          }),
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("API Error:", errorText);
-          throw new Error(`API request failed: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log("Full API response:", data);
-
-        if (
-          !data.candidates ||
-          !data.candidates[0] ||
-          !data.candidates[0].content
-        ) {
-          throw new Error("Invalid response structure from API");
-        }
-
-        const responseText = data.candidates[0].content.parts[0].text;
-        console.log("Raw response text:", responseText);
-
-        // Enhanced JSON cleaning and parsing
-        let cleanedResponse = responseText
-          .replace(/```json|```/g, "") // Remove code blocks
-          .replace(/[\u2018\u2019]/g, "'") // Replace smart quotes
-          .replace(/[\u201C\u201D]/g, '"') // Replace smart double quotes
-          .trim();
-
-        // Try to find JSON in the response
-        let jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
-
-        if (!jsonMatch) {
-          // If no JSON found, try to extract just the JSON part
-          const jsonStart = cleanedResponse.indexOf("{");
-          const jsonEnd = cleanedResponse.lastIndexOf("}") + 1;
-          if (jsonStart !== -1 && jsonEnd !== -1) {
-            cleanedResponse = cleanedResponse.substring(jsonStart, jsonEnd);
-            jsonMatch = [cleanedResponse];
-          }
-        }
-
-        if (jsonMatch) {
-          try {
-            // Additional cleaning for common JSON issues
-            let jsonString = jsonMatch[0]
-              .replace(/,(\s*[}\]])/g, "$1") // Remove trailing commas
-              .replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2":') // Ensure proper key quoting
-              .replace(/'/g, '"'); // Replace single quotes with double quotes
-
-            console.log("Cleaned JSON string:", jsonString);
-
-            const parsedData = JSON.parse(jsonString);
-            console.log("Successfully parsed data:", parsedData);
-
-            // Validate and clean the parsed data
-            const cleanedData = this.cleanParsedData(parsedData);
-
-            // Validate that we got some actual data
-            if (this.isEmptyData(cleanedData)) {
-              console.warn("API returned empty data, using mock data");
-              return this.getMockDataFromResume(fileText);
-            }
-
-            return cleanedData;
-          } catch (parseError) {
-            console.error("JSON parsing error:", parseError);
-            console.log("Problematic JSON string:", jsonMatch[0]);
-            return this.getMockDataFromResume(fileText);
-          }
-        } else {
-          console.warn("No JSON found in response, using mock data");
-          return this.getMockDataFromResume(fileText);
-        }
-      } catch (error) {
-        console.error("Gemini API Error:", error);
-        // Fallback to mock data for demonstration
-        return this.getMockDataFromResume("");
+      if (response.ok) {
+        const profile = await response.json();
+        setProfileData((prev) => ({
+          ...prev,
+          ...profile,
+          technicalSkills: profile.technicalSkills || [],
+          softSkills: profile.softSkills || [],
+          languages: profile.languages || [],
+          education: profile.education || [],
+          experience: profile.experience || [],
+          certifications: profile.certifications || [],
+          projects: profile.projects || [],
+          preferredRoles: profile.preferredRoles || [],
+        }));
       }
-    },
-
-    cleanParsedData(parsedData) {
-      const cleaned = {
-        fullName: String(parsedData.fullName || "").trim(),
-        email: String(parsedData.email || "").trim(),
-        contactNumber: String(parsedData.contactNumber || "").trim(),
-        skills: Array.isArray(parsedData.skills)
-          ? parsedData.skills
-              .map((skill) => String(skill || "").trim())
-              .filter((skill) => skill)
-          : [],
-        certifications: Array.isArray(parsedData.certifications)
-          ? parsedData.certifications
-              .map((cert) => String(cert || "").trim())
-              .filter((cert) => cert)
-          : [],
-        education: Array.isArray(parsedData.education)
-          ? parsedData.education
-              .map((edu) => ({
-                degree: String(edu.degree || "").trim(),
-                institution: String(edu.institution || "").trim(),
-                year: String(edu.year || "").trim(),
-              }))
-              .filter((edu) => edu.degree || edu.institution || edu.year)
-          : [],
-        experience: Array.isArray(parsedData.experience)
-          ? parsedData.experience
-              .map((exp) => ({
-                position: String(exp.position || "").trim(),
-                company: String(exp.company || "").trim(),
-                duration: String(exp.duration || "").trim(),
-                description: String(exp.description || "").trim(),
-              }))
-              .filter((exp) => exp.position || exp.company || exp.description)
-          : [],
-        summary: String(parsedData.summary || "").trim(),
-      };
-
-      return cleaned;
-    },
-
-    isEmptyData(data) {
-      return (
-        !data.fullName &&
-        !data.email &&
-        data.skills.length === 0 &&
-        data.certifications.length === 0 &&
-        data.education.length === 0 &&
-        data.experience.length === 0 &&
-        !data.summary
-      );
-    },
-
-    async extractTextFromFile(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          if (file.type === "text/plain") {
-            resolve(e.target.result);
-          } else if (file.type === "application/pdf") {
-            // For PDF files, provide a more realistic text extraction
-            // In production, you'd use a PDF parsing library
-            const realisticText = this.createRealisticResumeText(file.name);
-            resolve(realisticText);
-          } else if (
-            file.type ===
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-          ) {
-            resolve(
-              `DOCX Resume: ${file.name}\n\nFor best results, please convert to PDF or text format.`
-            );
-          } else {
-            resolve(
-              `File: ${file.name}\nType: ${file.type}\nSize: ${file.size} bytes`
-            );
-          }
-        };
-        reader.onerror = reject;
-        reader.readAsText(file);
-      });
-    },
-
-    // Create more realistic resume text based on file name
-    createRealisticResumeText(fileName) {
-      // Extract name from filename if possible
-      const nameFromFile =
-        fileName.replace(/[^a-zA-Z]/g, " ").trim() || "Candidate";
-
-      return `
-      ${nameFromFile.toUpperCase()}
-      Email: candidate.email@example.com
-      Phone: +1 (555) 123-4567
-      LinkedIn: linkedin.com/in/candidate
-      GitHub: github.com/candidate
-
-      PROFESSIONAL SUMMARY
-      Experienced software developer with expertise in modern web technologies. 
-      Passionate about building scalable applications and solving complex problems.
-
-      TECHNICAL SKILLS
-      • Programming: JavaScript, Python, Java, TypeScript
-      • Frameworks: React, Node.js, Spring Boot, Express
-      • Databases: MySQL, MongoDB, PostgreSQL
-      • Tools: Git, Docker, AWS, Jenkins
-
-      EXPERIENCE
-      Software Developer | Tech Company Inc. | 2020 - Present
-      • Developed and maintained web applications using React and Node.js
-      • Implemented RESTful APIs and database schemas
-      • Collaborated with cross-functional teams in agile environment
-
-      Junior Developer | Startup Co. | 2018 - 2020
-      • Built responsive user interfaces with modern JavaScript
-      • Participated in code reviews and team meetings
-
-      EDUCATION
-      Bachelor of Science in Computer Science
-      University of Technology | 2014 - 2018
-
-      CERTIFICATIONS
-      • AWS Certified Developer
-      • Google Cloud Associate
-    `;
-    },
-
-    getMockDataFromResume(resumeText) {
-      // Try to extract basic info from text
-      const emailMatch = resumeText.match(/\S+@\S+\.\S+/);
-      const phoneMatch = resumeText.match(
-        /[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}/
-      );
-
-      return {
-        fullName: "Extracted Candidate",
-        email: emailMatch ? emailMatch[0] : "candidate@example.com",
-        contactNumber: phoneMatch ? phoneMatch[0] : "",
-        skills: [
-          "JavaScript",
-          "React",
-          "Node.js",
-          "Python",
-          "Java",
-          "SQL",
-          "Git",
-        ],
-        certifications: ["AWS Certified Developer", "Google Cloud Associate"],
-        education: [
-          {
-            degree: "Bachelor of Science in Computer Science",
-            institution: "University of Technology",
-            year: "2018",
-          },
-        ],
-        experience: [
-          {
-            position: "Software Developer",
-            company: "Tech Company Inc.",
-            duration: "2020 - Present",
-            description:
-              "Developed web applications and implemented RESTful APIs",
-          },
-        ],
-        summary:
-          "Experienced software developer with expertise in modern web technologies.",
-      };
-    },
-
-    getMockData() {
-      return {
-        fullName: "John Doe",
-        email: "john.doe@example.com",
-        contactNumber: "+1 (555) 123-4567",
-        skills: ["JavaScript", "React", "Node.js", "Python", "SQL"],
-        certifications: ["AWS Certified Developer"],
-        education: [
-          {
-            degree: "Bachelor of Science in Computer Science",
-            institution: "University of Example",
-            year: "2020",
-          },
-        ],
-        experience: [
-          {
-            position: "Software Developer",
-            company: "Tech Solutions Inc.",
-            duration: "2021 - Present",
-            description: "Full-stack web development using modern technologies",
-          },
-        ],
-        summary:
-          "Software developer with 3+ years of experience in web application development.",
-      };
-    },
+    } catch (error) {
+      console.error("Error loading profile:", error);
+    }
   };
 
+  // Load resume history
+  const loadResumeHistory = async (userId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:2090/api/profile/${userId}/resumes/history`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      if (response.ok) {
+        const resumes = await response.json();
+        setResumeHistory(
+          resumes.map((resume) => ({
+            id: resume.id,
+            name: resume.fileName,
+            date: new Date(resume.uploadDate).toLocaleDateString(),
+            data: resume,
+            isActive: resume.isActive,
+          }))
+        );
+      }
+    } catch (error) {
+      console.error("Error loading resume history:", error);
+    }
+  };
+
+  // Handle file upload
   const handleFileUpload = async (file) => {
-    if (!file) return;
+    if (!file || !userId) return;
 
     // Validate file type
     const validTypes = [
@@ -421,9 +186,7 @@ const ResumeAnalysisPage = () => {
 
     // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
-      setErrors({
-        upload: "File size must be less than 5MB",
-      });
+      setErrors({ upload: "File size must be less than 5MB" });
       return;
     }
 
@@ -432,84 +195,175 @@ const ResumeAnalysisPage = () => {
     setErrors({});
 
     try {
-      console.log("Starting resume analysis with Gemini 2.5 Flash...");
-      const result = await GeminiService.analyzeResume(file);
-      setAnalysisResult(result);
+      const formData = new FormData();
+      formData.append("file", file);
 
-      // Auto-fill the form with extracted data
-      setProfileData({
-        fullName: result.fullName || "",
-        email: result.email || "",
-        contactNumber: result.contactNumber || "",
-        skills: result.skills || [],
-        certifications: result.certifications || [],
-        education: result.education || [],
-        experience: result.experience || [],
-        summary: result.summary || "",
-      });
+      const response = await fetch(
+        `http://localhost:2090/api/profile/${userId}/resume/upload`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+          body: formData,
+        }
+      );
 
-      // Add to resume history (keep only last 4)
-      const newResume = {
-        id: Date.now(),
-        name: file.name,
-        date: new Date().toLocaleDateString(),
-        data: result,
-        file: file,
-      };
+      if (!response.ok) {
+        throw new Error(`Upload failed with status: ${response.status}`);
+      }
 
-      setResumeHistory((prev) => [newResume, ...prev.slice(0, 3)]);
+      const result = await response.json();
 
-      // Hide upload section after successful analysis
-      setShowUpload(false);
+      if (result.success) {
+        setAnalysisResult(result);
 
-      console.log("Analysis completed successfully");
+        // Update profile data with extracted information
+        const extractedData = result.analysisResult || result.extractedData;
+        if (extractedData) {
+          setProfileData((prev) => ({
+            ...prev,
+            fullName: prev.fullName || extractedData.fullName || "",
+            email: prev.email || extractedData.email || "",
+            contactNumber:
+              prev.contactNumber || extractedData.contactNumber || "",
+            title: prev.title || extractedData.title || "",
+            summary: prev.summary || extractedData.summary || "",
+            technicalSkills: [
+              ...new Set([
+                ...prev.technicalSkills,
+                ...(extractedData.skills || []),
+              ]),
+            ],
+            education: [...prev.education, ...(extractedData.education || [])],
+            experience: [
+              ...prev.experience,
+              ...(extractedData.experience || []),
+            ],
+            certifications: [
+              ...prev.certifications,
+              ...(extractedData.certifications || []).map((name) => ({ name })),
+            ],
+          }));
+        }
+
+        // Reload resume history
+        loadResumeHistory(userId);
+
+        // Hide upload section after successful analysis
+        setShowUpload(false);
+      } else {
+        throw new Error(result.message || "Upload failed");
+      }
     } catch (error) {
-      console.error("Analysis error:", error);
+      console.error("Upload error:", error);
       setErrors({
-        analysis:
-          "AI analysis failed. Using extracted data. You can manually edit all fields.",
-      });
-
-      // Even if analysis fails, use extracted data so user can still proceed
-      const mockData = GeminiService.getMockDataFromResume("");
-      setProfileData({
-        fullName: mockData.fullName,
-        email: mockData.email,
-        contactNumber: mockData.contactNumber,
-        skills: mockData.skills,
-        certifications: mockData.certifications,
-        education: mockData.education,
-        experience: mockData.experience,
-        summary: mockData.summary,
+        upload: "Failed to upload and analyze resume. Please try again.",
       });
     } finally {
       setIsAnalyzing(false);
     }
   };
-
   const handleNewResumeUpload = () => {
     setShowUpload(true);
     setUploadedFile(null);
     setAnalysisResult(null);
   };
 
-  const handleResumeHistoryClick = (resume) => {
-    setProfileData({
-      fullName: resume.data.fullName || "",
-      email: resume.data.email || "",
-      contactNumber: resume.data.contactNumber || "",
-      skills: resume.data.skills || [],
-      certifications: resume.data.certifications || [],
-      education: resume.data.education || [],
-      experience: resume.data.experience || [],
-      summary: resume.data.summary || "",
-    });
-    setShowUpload(false);
+  const handleResumeHistoryClick = async (resume) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:2090/api/profile/resumes/${resume.id}/reanalyze`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        setAnalysisResult(result);
+
+        // Update profile with re-analyzed data
+        const extractedData = result.extractedData;
+        setProfileData((prev) => ({
+          ...prev,
+          fullName: prev.fullName || extractedData.fullName || "",
+          email: prev.email || extractedData.email || "",
+          contactNumber:
+            prev.contactNumber || extractedData.contactNumber || "",
+          title: prev.title || extractedData.title || "",
+          summary: prev.summary || extractedData.summary || "",
+          technicalSkills: [
+            ...new Set([
+              ...prev.technicalSkills,
+              ...(extractedData.skills || []),
+            ]),
+          ],
+        }));
+
+        setShowUpload(false);
+      }
+    } catch (error) {
+      console.error("Error reanalyzing resume:", error);
+    }
   };
 
-  const handleDeleteResume = (id, e) => {
+  const handleDeleteResume = async (resumeId, e) => {
     e.stopPropagation();
-    setResumeHistory((prev) => prev.filter((resume) => resume.id !== id));
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:2090/api/profile/${userId}/resumes/${resumeId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        setResumeHistory((prev) =>
+          prev.filter((resume) => resume.id !== resumeId)
+        );
+        // Reload resume history to get updated list
+        loadResumeHistory(userId);
+      }
+    } catch (error) {
+      console.error("Error deleting resume:", error);
+    }
+  };
+
+  const handleSetActiveResume = async (resumeId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:2090/api/profile/${userId}/resumes/${resumeId}/active`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        // Update local state to reflect active resume
+        setResumeHistory((prev) =>
+          prev.map((resume) => ({
+            ...resume,
+            isActive: resume.id === resumeId,
+          }))
+        );
+      }
+    } catch (error) {
+      console.error("Error setting active resume:", error);
+    }
   };
 
   const handleDragOver = (e) => {
@@ -552,7 +406,23 @@ const ResumeAnalysisPage = () => {
     }));
   };
 
+  const handleObjectFieldChange = (field, index, subField, value) => {
+    setProfileData((prev) => ({
+      ...prev,
+      [field]: prev[field].map((item, i) =>
+        i === index ? { ...item, [subField]: value } : item
+      ),
+    }));
+  };
+
   const addArrayItem = (field, template = "") => {
+    setProfileData((prev) => ({
+      ...prev,
+      [field]: [...prev[field], template],
+    }));
+  };
+
+  const addObjectItem = (field, template = {}) => {
     setProfileData((prev) => ({
       ...prev,
       [field]: [...prev[field], template],
@@ -584,17 +454,99 @@ const ResumeAnalysisPage = () => {
   };
 
   const handleSaveProfile = async () => {
-    if (!validateForm()) return;
+    if (!validateForm() || !userId) return;
 
+    setIsSaving(true);
     try {
-      console.log("Saving profile data:", profileData);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      alert("Profile saved successfully!");
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:2090/api/profile/${userId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(profileData),
+        }
+      );
+
+      if (response.ok) {
+        const updatedProfile = await response.json();
+        setProfileData(updatedProfile);
+        alert("Profile saved successfully!");
+      } else {
+        throw new Error("Failed to save profile");
+      }
     } catch (error) {
       console.error("Save error:", error);
       alert("Failed to save profile. Please try again.");
+    } finally {
+      setIsSaving(false);
     }
   };
+
+  // Enhanced resume history display with active resume indicator
+  const ResumeHistoryItem = ({ resume }) => (
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      onClick={() => handleResumeHistoryClick(resume)}
+      className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
+        isDarkMode
+          ? "bg-gray-700 border-gray-600 hover:border-blue-600"
+          : "bg-gray-50 border-gray-200 hover:border-blue-400"
+      } ${resume.isActive ? "border-green-500 border-2" : ""}`}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <FileText
+            size={16}
+            className={isDarkMode ? "text-gray-400" : "text-gray-500"}
+          />
+          <div>
+            <p
+              className={`font-medium text-sm ${
+                isDarkMode ? "text-white" : "text-gray-800"
+              }`}
+            >
+              {resume.name}
+              {resume.isActive && (
+                <span className="ml-2 text-green-500 text-xs">● Active</span>
+              )}
+            </p>
+            <p
+              className={`text-xs ${
+                isDarkMode ? "text-gray-400" : "text-gray-500"
+              }`}
+            >
+              {resume.date}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center space-x-1">
+          {!resume.isActive && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSetActiveResume(resume.id);
+              }}
+              className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1"
+              title="Set as active"
+            >
+              <CheckCircle size={14} />
+            </button>
+          )}
+          <button
+            onClick={(e) => handleDeleteResume(resume.id, e)}
+            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1"
+            title="Delete resume"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
 
   return (
     <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
@@ -676,7 +628,7 @@ const ResumeAnalysisPage = () => {
                                 isDarkMode ? "text-gray-300" : "text-gray-700"
                               }`}
                             >
-                              Analyzing with Gemini AI...
+                              Analyzing Resume...
                             </p>
                             <p
                               className={`text-sm ${
@@ -761,49 +713,7 @@ const ResumeAnalysisPage = () => {
 
                   <div className="space-y-3">
                     {resumeHistory.map((resume) => (
-                      <motion.div
-                        key={resume.id}
-                        whileHover={{ scale: 1.02 }}
-                        onClick={() => handleResumeHistoryClick(resume)}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
-                          isDarkMode
-                            ? "bg-gray-700 border-gray-600 hover:border-blue-600"
-                            : "bg-gray-50 border-gray-200 hover:border-blue-400"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <FileText
-                              size={16}
-                              className={
-                                isDarkMode ? "text-gray-400" : "text-gray-500"
-                              }
-                            />
-                            <div>
-                              <p
-                                className={`font-medium text-sm ${
-                                  isDarkMode ? "text-white" : "text-gray-800"
-                                }`}
-                              >
-                                {resume.name}
-                              </p>
-                              <p
-                                className={`text-xs ${
-                                  isDarkMode ? "text-gray-400" : "text-gray-500"
-                                }`}
-                              >
-                                {resume.date}
-                              </p>
-                            </div>
-                          </div>
-                          <button
-                            onClick={(e) => handleDeleteResume(resume.id, e)}
-                            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </motion.div>
+                      <ResumeHistoryItem key={resume.id} resume={resume} />
                     ))}
 
                     {resumeHistory.length === 0 && (
@@ -852,14 +762,19 @@ const ResumeAnalysisPage = () => {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={handleSaveProfile}
+                        disabled={isSaving}
                         className={`w-full flex items-center space-x-3 p-3 rounded-lg border transition-all duration-200 ${
                           isDarkMode
                             ? "bg-blue-600 border-blue-500 hover:bg-blue-700 text-white"
                             : "bg-blue-500 border-blue-400 hover:bg-blue-600 text-white"
-                        }`}
+                        } ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
                       >
-                        <Save size={18} />
-                        <span>Save Profile</span>
+                        {isSaving ? (
+                          <Loader2 size={18} className="animate-spin" />
+                        ) : (
+                          <Save size={18} />
+                        )}
+                        <span>{isSaving ? "Saving..." : "Save Profile"}</span>
                       </motion.button>
                     </div>
                   </div>
@@ -974,28 +889,216 @@ const ResumeAnalysisPage = () => {
                           </div>
                         </div>
 
-                        <div>
-                          <label
-                            className={`flex items-center text-sm font-medium mb-2 ${
-                              isDarkMode ? "text-gray-400" : "text-gray-600"
-                            }`}
-                          >
-                            <Phone size={16} className="mr-1" />
-                            Contact Number
-                          </label>
-                          <input
-                            type="tel"
-                            value={profileData.contactNumber}
-                            onChange={(e) =>
-                              handleInputChange("contactNumber", e.target.value)
-                            }
-                            className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                              isDarkMode
-                                ? "bg-gray-700 text-white border-gray-600"
-                                : "bg-white text-gray-800 border-gray-300"
-                            }`}
-                            placeholder="Enter your phone number"
-                          />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label
+                              className={`flex items-center text-sm font-medium mb-2 ${
+                                isDarkMode ? "text-gray-400" : "text-gray-600"
+                              }`}
+                            >
+                              <Phone size={16} className="mr-1" />
+                              Contact Number
+                            </label>
+                            <input
+                              type="tel"
+                              value={profileData.contactNumber}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  "contactNumber",
+                                  e.target.value
+                                )
+                              }
+                              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                isDarkMode
+                                  ? "bg-gray-700 text-white border-gray-600"
+                                  : "bg-white text-gray-800 border-gray-300"
+                              }`}
+                              placeholder="Enter your phone number"
+                            />
+                          </div>
+
+                          <div>
+                            <label
+                              className={`flex items-center text-sm font-medium mb-2 ${
+                                isDarkMode ? "text-gray-400" : "text-gray-600"
+                              }`}
+                            >
+                              <MapPin size={16} className="mr-1" />
+                              Location
+                            </label>
+                            <input
+                              type="text"
+                              value={profileData.location}
+                              onChange={(e) =>
+                                handleInputChange("location", e.target.value)
+                              }
+                              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                isDarkMode
+                                  ? "bg-gray-700 text-white border-gray-600"
+                                  : "bg-white text-gray-800 border-gray-300"
+                              }`}
+                              placeholder="Enter your location"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label
+                              className={`flex items-center text-sm font-medium mb-2 ${
+                                isDarkMode ? "text-gray-400" : "text-gray-600"
+                              }`}
+                            >
+                              <BriefcaseIcon size={16} className="mr-1" />
+                              Job Title
+                            </label>
+                            <input
+                              type="text"
+                              value={profileData.title}
+                              onChange={(e) =>
+                                handleInputChange("title", e.target.value)
+                              }
+                              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                isDarkMode
+                                  ? "bg-gray-700 text-white border-gray-600"
+                                  : "bg-white text-gray-800 border-gray-300"
+                              }`}
+                              placeholder="e.g., Full Stack Developer"
+                            />
+                          </div>
+
+                          <div>
+                            <label
+                              className={`flex items-center text-sm font-medium mb-2 ${
+                                isDarkMode ? "text-gray-400" : "text-gray-600"
+                              }`}
+                            >
+                              <Briefcase size={16} className="mr-1" />
+                              Total Experience
+                            </label>
+                            <input
+                              type="text"
+                              value={profileData.totalExperience}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  "totalExperience",
+                                  e.target.value
+                                )
+                              }
+                              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                isDarkMode
+                                  ? "bg-gray-700 text-white border-gray-600"
+                                  : "bg-white text-gray-800 border-gray-300"
+                              }`}
+                              placeholder="e.g., 3 years"
+                            />
+                          </div>
+
+                          <div>
+                            <label
+                              className={`flex items-center text-sm font-medium mb-2 ${
+                                isDarkMode ? "text-gray-400" : "text-gray-600"
+                              }`}
+                            >
+                              <Languages size={16} className="mr-1" />
+                              Languages
+                            </label>
+                            <input
+                              type="text"
+                              value={profileData.languages.join(", ")}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  "languages",
+                                  e.target.value
+                                    .split(",")
+                                    .map((lang) => lang.trim())
+                                )
+                              }
+                              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                isDarkMode
+                                  ? "bg-gray-700 text-white border-gray-600"
+                                  : "bg-white text-gray-800 border-gray-300"
+                              }`}
+                              placeholder="e.g., English, Spanish, French"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label
+                              className={`flex items-center text-sm font-medium mb-2 ${
+                                isDarkMode ? "text-gray-400" : "text-gray-600"
+                              }`}
+                            >
+                              <Globe size={16} className="mr-1" />
+                              LinkedIn URL
+                            </label>
+                            <input
+                              type="url"
+                              value={profileData.linkedInUrl}
+                              onChange={(e) =>
+                                handleInputChange("linkedInUrl", e.target.value)
+                              }
+                              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                isDarkMode
+                                  ? "bg-gray-700 text-white border-gray-600"
+                                  : "bg-white text-gray-800 border-gray-300"
+                              }`}
+                              placeholder="https://linkedin.com/in/yourname"
+                            />
+                          </div>
+
+                          <div>
+                            <label
+                              className={`flex items-center text-sm font-medium mb-2 ${
+                                isDarkMode ? "text-gray-400" : "text-gray-600"
+                              }`}
+                            >
+                              <GitBranch size={16} className="mr-1" />
+                              GitHub URL
+                            </label>
+                            <input
+                              type="url"
+                              value={profileData.githubUrl}
+                              onChange={(e) =>
+                                handleInputChange("githubUrl", e.target.value)
+                              }
+                              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                isDarkMode
+                                  ? "bg-gray-700 text-white border-gray-600"
+                                  : "bg-white text-gray-800 border-gray-300"
+                              }`}
+                              placeholder="https://github.com/yourname"
+                            />
+                          </div>
+
+                          <div>
+                            <label
+                              className={`flex items-center text-sm font-medium mb-2 ${
+                                isDarkMode ? "text-gray-400" : "text-gray-600"
+                              }`}
+                            >
+                              <Globe size={16} className="mr-1" />
+                              Portfolio URL
+                            </label>
+                            <input
+                              type="url"
+                              value={profileData.portfolioUrl}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  "portfolioUrl",
+                                  e.target.value
+                                )
+                              }
+                              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                isDarkMode
+                                  ? "bg-gray-700 text-white border-gray-600"
+                                  : "bg-white text-gray-800 border-gray-300"
+                              }`}
+                              placeholder="https://yourportfolio.com"
+                            />
+                          </div>
                         </div>
                       </div>
 
@@ -1008,17 +1111,17 @@ const ResumeAnalysisPage = () => {
                             }`}
                           >
                             <BookOpen size={18} className="mr-2" />
-                            Skills
+                            Technical Skills
                           </h3>
                           <button
-                            onClick={() => addArrayItem("skills", "")}
+                            onClick={() => addArrayItem("technicalSkills", "")}
                             className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
                           >
                             + Add Skill
                           </button>
                         </div>
                         <div className="space-y-2">
-                          {profileData.skills.map((skill, index) => (
+                          {profileData.technicalSkills.map((skill, index) => (
                             <div
                               key={index}
                               className="flex items-center space-x-2"
@@ -1028,7 +1131,7 @@ const ResumeAnalysisPage = () => {
                                 value={skill}
                                 onChange={(e) =>
                                   handleArrayFieldChange(
-                                    "skills",
+                                    "technicalSkills",
                                     index,
                                     e.target.value
                                   )
@@ -1038,29 +1141,31 @@ const ResumeAnalysisPage = () => {
                                     ? "bg-gray-700 text-white border-gray-600"
                                     : "bg-white text-gray-800 border-gray-300"
                                 }`}
-                                placeholder="Enter a skill"
+                                placeholder="Enter a technical skill"
                               />
                               <button
-                                onClick={() => removeArrayItem("skills", index)}
+                                onClick={() =>
+                                  removeArrayItem("technicalSkills", index)
+                                }
                                 className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-2"
                               >
                                 <X size={16} />
                               </button>
                             </div>
                           ))}
-                          {profileData.skills.length === 0 && (
+                          {profileData.technicalSkills.length === 0 && (
                             <p
                               className={`text-sm italic ${
                                 isDarkMode ? "text-gray-400" : "text-gray-500"
                               }`}
                             >
-                              No skills extracted. Add some skills above.
+                              No technical skills added yet.
                             </p>
                           )}
                         </div>
                       </div>
 
-                      {/* Certifications */}
+                      {/* Soft Skills */}
                       <div>
                         <div className="flex items-center justify-between mb-4">
                           <h3
@@ -1068,28 +1173,28 @@ const ResumeAnalysisPage = () => {
                               isDarkMode ? "text-gray-300" : "text-gray-700"
                             }`}
                           >
-                            <Award size={18} className="mr-2" />
-                            Certifications
+                            <User size={18} className="mr-2" />
+                            Soft Skills
                           </h3>
                           <button
-                            onClick={() => addArrayItem("certifications", "")}
+                            onClick={() => addArrayItem("softSkills", "")}
                             className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
                           >
-                            + Add Certification
+                            + Add Skill
                           </button>
                         </div>
                         <div className="space-y-2">
-                          {profileData.certifications.map((cert, index) => (
+                          {profileData.softSkills.map((skill, index) => (
                             <div
                               key={index}
                               className="flex items-center space-x-2"
                             >
                               <input
                                 type="text"
-                                value={cert}
+                                value={skill}
                                 onChange={(e) =>
                                   handleArrayFieldChange(
-                                    "certifications",
+                                    "softSkills",
                                     index,
                                     e.target.value
                                   )
@@ -1099,11 +1204,11 @@ const ResumeAnalysisPage = () => {
                                     ? "bg-gray-700 text-white border-gray-600"
                                     : "bg-white text-gray-800 border-gray-300"
                                 }`}
-                                placeholder="Enter certification"
+                                placeholder="Enter a soft skill"
                               />
                               <button
                                 onClick={() =>
-                                  removeArrayItem("certifications", index)
+                                  removeArrayItem("softSkills", index)
                                 }
                                 className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-2"
                               >
@@ -1127,10 +1232,12 @@ const ResumeAnalysisPage = () => {
                           </h3>
                           <button
                             onClick={() =>
-                              addArrayItem("education", {
+                              addObjectItem("education", {
                                 degree: "",
                                 institution: "",
                                 year: "",
+                                location: "",
+                                grade: "",
                               })
                             }
                             className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
@@ -1152,10 +1259,12 @@ const ResumeAnalysisPage = () => {
                                 type="text"
                                 value={edu.degree}
                                 onChange={(e) =>
-                                  handleArrayFieldChange("education", index, {
-                                    ...edu,
-                                    degree: e.target.value,
-                                  })
+                                  handleObjectFieldChange(
+                                    "education",
+                                    index,
+                                    "degree",
+                                    e.target.value
+                                  )
                                 }
                                 className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                                   isDarkMode
@@ -1168,10 +1277,12 @@ const ResumeAnalysisPage = () => {
                                 type="text"
                                 value={edu.institution}
                                 onChange={(e) =>
-                                  handleArrayFieldChange("education", index, {
-                                    ...edu,
-                                    institution: e.target.value,
-                                  })
+                                  handleObjectFieldChange(
+                                    "education",
+                                    index,
+                                    "institution",
+                                    e.target.value
+                                  )
                                 }
                                 className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                                   isDarkMode
@@ -1180,22 +1291,62 @@ const ResumeAnalysisPage = () => {
                                 }`}
                                 placeholder="Institution"
                               />
-                              <input
-                                type="text"
-                                value={edu.year}
-                                onChange={(e) =>
-                                  handleArrayFieldChange("education", index, {
-                                    ...edu,
-                                    year: e.target.value,
-                                  })
-                                }
-                                className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                  isDarkMode
-                                    ? "bg-gray-700 text-white border-gray-600"
-                                    : "bg-white text-gray-800 border-gray-300"
-                                }`}
-                                placeholder="Year"
-                              />
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <input
+                                  type="text"
+                                  value={edu.year}
+                                  onChange={(e) =>
+                                    handleObjectFieldChange(
+                                      "education",
+                                      index,
+                                      "year",
+                                      e.target.value
+                                    )
+                                  }
+                                  className={`p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                    isDarkMode
+                                      ? "bg-gray-700 text-white border-gray-600"
+                                      : "bg-white text-gray-800 border-gray-300"
+                                  }`}
+                                  placeholder="Year"
+                                />
+                                <input
+                                  type="text"
+                                  value={edu.location}
+                                  onChange={(e) =>
+                                    handleObjectFieldChange(
+                                      "education",
+                                      index,
+                                      "location",
+                                      e.target.value
+                                    )
+                                  }
+                                  className={`p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                    isDarkMode
+                                      ? "bg-gray-700 text-white border-gray-600"
+                                      : "bg-white text-gray-800 border-gray-300"
+                                  }`}
+                                  placeholder="Location"
+                                />
+                                <input
+                                  type="text"
+                                  value={edu.grade}
+                                  onChange={(e) =>
+                                    handleObjectFieldChange(
+                                      "education",
+                                      index,
+                                      "grade",
+                                      e.target.value
+                                    )
+                                  }
+                                  className={`p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                    isDarkMode
+                                      ? "bg-gray-700 text-white border-gray-600"
+                                      : "bg-white text-gray-800 border-gray-300"
+                                  }`}
+                                  placeholder="Grade"
+                                />
+                              </div>
                               <button
                                 onClick={() =>
                                   removeArrayItem("education", index)
@@ -1222,11 +1373,13 @@ const ResumeAnalysisPage = () => {
                           </h3>
                           <button
                             onClick={() =>
-                              addArrayItem("experience", {
+                              addObjectItem("experience", {
                                 position: "",
                                 company: "",
                                 duration: "",
                                 description: "",
+                                location: "",
+                                technologies: [],
                               })
                             }
                             className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
@@ -1249,13 +1402,11 @@ const ResumeAnalysisPage = () => {
                                   type="text"
                                   value={exp.position}
                                   onChange={(e) =>
-                                    handleArrayFieldChange(
+                                    handleObjectFieldChange(
                                       "experience",
                                       index,
-                                      {
-                                        ...exp,
-                                        position: e.target.value,
-                                      }
+                                      "position",
+                                      e.target.value
                                     )
                                   }
                                   className={`p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
@@ -1269,13 +1420,11 @@ const ResumeAnalysisPage = () => {
                                   type="text"
                                   value={exp.company}
                                   onChange={(e) =>
-                                    handleArrayFieldChange(
+                                    handleObjectFieldChange(
                                       "experience",
                                       index,
-                                      {
-                                        ...exp,
-                                        company: e.target.value,
-                                      }
+                                      "company",
+                                      e.target.value
                                     )
                                   }
                                   className={`p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
@@ -1286,29 +1435,53 @@ const ResumeAnalysisPage = () => {
                                   placeholder="Company"
                                 />
                               </div>
-                              <input
-                                type="text"
-                                value={exp.duration}
-                                onChange={(e) =>
-                                  handleArrayFieldChange("experience", index, {
-                                    ...exp,
-                                    duration: e.target.value,
-                                  })
-                                }
-                                className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                  isDarkMode
-                                    ? "bg-gray-700 text-white border-gray-600"
-                                    : "bg-white text-gray-800 border-gray-300"
-                                }`}
-                                placeholder="Duration (e.g., 2020 - 2023)"
-                              />
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <input
+                                  type="text"
+                                  value={exp.duration}
+                                  onChange={(e) =>
+                                    handleObjectFieldChange(
+                                      "experience",
+                                      index,
+                                      "duration",
+                                      e.target.value
+                                    )
+                                  }
+                                  className={`p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                    isDarkMode
+                                      ? "bg-gray-700 text-white border-gray-600"
+                                      : "bg-white text-gray-800 border-gray-300"
+                                  }`}
+                                  placeholder="Duration (e.g., 2020 - 2023)"
+                                />
+                                <input
+                                  type="text"
+                                  value={exp.location}
+                                  onChange={(e) =>
+                                    handleObjectFieldChange(
+                                      "experience",
+                                      index,
+                                      "location",
+                                      e.target.value
+                                    )
+                                  }
+                                  className={`p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                    isDarkMode
+                                      ? "bg-gray-700 text-white border-gray-600"
+                                      : "bg-white text-gray-800 border-gray-300"
+                                  }`}
+                                  placeholder="Location"
+                                />
+                              </div>
                               <textarea
                                 value={exp.description}
                                 onChange={(e) =>
-                                  handleArrayFieldChange("experience", index, {
-                                    ...exp,
-                                    description: e.target.value,
-                                  })
+                                  handleObjectFieldChange(
+                                    "experience",
+                                    index,
+                                    "description",
+                                    e.target.value
+                                  )
                                 }
                                 className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                                   isDarkMode
@@ -1318,9 +1491,382 @@ const ResumeAnalysisPage = () => {
                                 placeholder="Job description"
                                 rows="3"
                               />
+                              <input
+                                type="text"
+                                value={
+                                  exp.technologies
+                                    ? exp.technologies.join(", ")
+                                    : ""
+                                }
+                                onChange={(e) =>
+                                  handleObjectFieldChange(
+                                    "experience",
+                                    index,
+                                    "technologies",
+                                    e.target.value
+                                      .split(",")
+                                      .map((tech) => tech.trim())
+                                  )
+                                }
+                                className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                  isDarkMode
+                                    ? "bg-gray-700 text-white border-gray-600"
+                                    : "bg-white text-gray-800 border-gray-300"
+                                }`}
+                                placeholder="Technologies used (comma separated)"
+                              />
                               <button
                                 onClick={() =>
                                   removeArrayItem("experience", index)
+                                }
+                                className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Certifications */}
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <h3
+                            className={`text-lg font-medium flex items-center ${
+                              isDarkMode ? "text-gray-300" : "text-gray-700"
+                            }`}
+                          >
+                            <Award size={18} className="mr-2" />
+                            Certifications
+                          </h3>
+                          <button
+                            onClick={() =>
+                              addObjectItem("certifications", {
+                                name: "",
+                                issuingOrganization: "",
+                                issueDate: "",
+                                expiryDate: "",
+                                credentialId: "",
+                                credentialUrl: "",
+                              })
+                            }
+                            className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+                          >
+                            + Add Certification
+                          </button>
+                        </div>
+                        <div className="space-y-4">
+                          {profileData.certifications.map((cert, index) => (
+                            <div
+                              key={index}
+                              className={`border rounded-lg p-4 space-y-3 ${
+                                isDarkMode
+                                  ? "border-gray-600"
+                                  : "border-gray-200"
+                              }`}
+                            >
+                              <input
+                                type="text"
+                                value={cert.name}
+                                onChange={(e) =>
+                                  handleObjectFieldChange(
+                                    "certifications",
+                                    index,
+                                    "name",
+                                    e.target.value
+                                  )
+                                }
+                                className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                  isDarkMode
+                                    ? "bg-gray-700 text-white border-gray-600"
+                                    : "bg-white text-gray-800 border-gray-300"
+                                }`}
+                                placeholder="Certification name"
+                              />
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <input
+                                  type="text"
+                                  value={cert.issuingOrganization}
+                                  onChange={(e) =>
+                                    handleObjectFieldChange(
+                                      "certifications",
+                                      index,
+                                      "issuingOrganization",
+                                      e.target.value
+                                    )
+                                  }
+                                  className={`p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                    isDarkMode
+                                      ? "bg-gray-700 text-white border-gray-600"
+                                      : "bg-white text-gray-800 border-gray-300"
+                                  }`}
+                                  placeholder="Issuing organization"
+                                />
+                                <input
+                                  type="text"
+                                  value={cert.credentialId}
+                                  onChange={(e) =>
+                                    handleObjectFieldChange(
+                                      "certifications",
+                                      index,
+                                      "credentialId",
+                                      e.target.value
+                                    )
+                                  }
+                                  className={`p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                    isDarkMode
+                                      ? "bg-gray-700 text-white border-gray-600"
+                                      : "bg-white text-gray-800 border-gray-300"
+                                  }`}
+                                  placeholder="Credential ID"
+                                />
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <input
+                                  type="text"
+                                  value={cert.issueDate}
+                                  onChange={(e) =>
+                                    handleObjectFieldChange(
+                                      "certifications",
+                                      index,
+                                      "issueDate",
+                                      e.target.value
+                                    )
+                                  }
+                                  className={`p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                    isDarkMode
+                                      ? "bg-gray-700 text-white border-gray-600"
+                                      : "bg-white text-gray-800 border-gray-300"
+                                  }`}
+                                  placeholder="Issue date"
+                                />
+                                <input
+                                  type="text"
+                                  value={cert.expiryDate}
+                                  onChange={(e) =>
+                                    handleObjectFieldChange(
+                                      "certifications",
+                                      index,
+                                      "expiryDate",
+                                      e.target.value
+                                    )
+                                  }
+                                  className={`p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                    isDarkMode
+                                      ? "bg-gray-700 text-white border-gray-600"
+                                      : "bg-white text-gray-800 border-gray-300"
+                                  }`}
+                                  placeholder="Expiry date"
+                                />
+                              </div>
+                              <input
+                                type="url"
+                                value={cert.credentialUrl}
+                                onChange={(e) =>
+                                  handleObjectFieldChange(
+                                    "certifications",
+                                    index,
+                                    "credentialUrl",
+                                    e.target.value
+                                  )
+                                }
+                                className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                  isDarkMode
+                                    ? "bg-gray-700 text-white border-gray-600"
+                                    : "bg-white text-gray-800 border-gray-300"
+                                }`}
+                                placeholder="Credential URL"
+                              />
+                              <button
+                                onClick={() =>
+                                  removeArrayItem("certifications", index)
+                                }
+                                className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Projects */}
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <h3
+                            className={`text-lg font-medium flex items-center ${
+                              isDarkMode ? "text-gray-300" : "text-gray-700"
+                            }`}
+                          >
+                            <GitBranch size={18} className="mr-2" />
+                            Projects
+                          </h3>
+                          <button
+                            onClick={() =>
+                              addObjectItem("projects", {
+                                name: "",
+                                description: "",
+                                duration: "",
+                                technologies: [],
+                                projectUrl: "",
+                                githubUrl: "",
+                                role: "",
+                              })
+                            }
+                            className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+                          >
+                            + Add Project
+                          </button>
+                        </div>
+                        <div className="space-y-4">
+                          {profileData.projects.map((project, index) => (
+                            <div
+                              key={index}
+                              className={`border rounded-lg p-4 space-y-3 ${
+                                isDarkMode
+                                  ? "border-gray-600"
+                                  : "border-gray-200"
+                              }`}
+                            >
+                              <input
+                                type="text"
+                                value={project.name}
+                                onChange={(e) =>
+                                  handleObjectFieldChange(
+                                    "projects",
+                                    index,
+                                    "name",
+                                    e.target.value
+                                  )
+                                }
+                                className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                  isDarkMode
+                                    ? "bg-gray-700 text-white border-gray-600"
+                                    : "bg-white text-gray-800 border-gray-300"
+                                }`}
+                                placeholder="Project name"
+                              />
+                              <textarea
+                                value={project.description}
+                                onChange={(e) =>
+                                  handleObjectFieldChange(
+                                    "projects",
+                                    index,
+                                    "description",
+                                    e.target.value
+                                  )
+                                }
+                                className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                  isDarkMode
+                                    ? "bg-gray-700 text-white border-gray-600"
+                                    : "bg-white text-gray-800 border-gray-300"
+                                }`}
+                                placeholder="Project description"
+                                rows="3"
+                              />
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <input
+                                  type="text"
+                                  value={project.duration}
+                                  onChange={(e) =>
+                                    handleObjectFieldChange(
+                                      "projects",
+                                      index,
+                                      "duration",
+                                      e.target.value
+                                    )
+                                  }
+                                  className={`p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                    isDarkMode
+                                      ? "bg-gray-700 text-white border-gray-600"
+                                      : "bg-white text-gray-800 border-gray-300"
+                                  }`}
+                                  placeholder="Duration"
+                                />
+                                <input
+                                  type="text"
+                                  value={project.role}
+                                  onChange={(e) =>
+                                    handleObjectFieldChange(
+                                      "projects",
+                                      index,
+                                      "role",
+                                      e.target.value
+                                    )
+                                  }
+                                  className={`p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                    isDarkMode
+                                      ? "bg-gray-700 text-white border-gray-600"
+                                      : "bg-white text-gray-800 border-gray-300"
+                                  }`}
+                                  placeholder="Your role"
+                                />
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <input
+                                  type="url"
+                                  value={project.projectUrl}
+                                  onChange={(e) =>
+                                    handleObjectFieldChange(
+                                      "projects",
+                                      index,
+                                      "projectUrl",
+                                      e.target.value
+                                    )
+                                  }
+                                  className={`p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                    isDarkMode
+                                      ? "bg-gray-700 text-white border-gray-600"
+                                      : "bg-white text-gray-800 border-gray-300"
+                                  }`}
+                                  placeholder="Project URL"
+                                />
+                                <input
+                                  type="url"
+                                  value={project.githubUrl}
+                                  onChange={(e) =>
+                                    handleObjectFieldChange(
+                                      "projects",
+                                      index,
+                                      "githubUrl",
+                                      e.target.value
+                                    )
+                                  }
+                                  className={`p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                    isDarkMode
+                                      ? "bg-gray-700 text-white border-gray-600"
+                                      : "bg-white text-gray-800 border-gray-300"
+                                  }`}
+                                  placeholder="GitHub URL"
+                                />
+                              </div>
+                              <input
+                                type="text"
+                                value={
+                                  project.technologies
+                                    ? project.technologies.join(", ")
+                                    : ""
+                                }
+                                onChange={(e) =>
+                                  handleObjectFieldChange(
+                                    "projects",
+                                    index,
+                                    "technologies",
+                                    e.target.value
+                                      .split(",")
+                                      .map((tech) => tech.trim())
+                                  )
+                                }
+                                className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                  isDarkMode
+                                    ? "bg-gray-700 text-white border-gray-600"
+                                    : "bg-white text-gray-800 border-gray-300"
+                                }`}
+                                placeholder="Technologies used (comma separated)"
+                              />
+                              <button
+                                onClick={() =>
+                                  removeArrayItem("projects", index)
                                 }
                                 className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
                               >
@@ -1354,6 +1900,176 @@ const ResumeAnalysisPage = () => {
                           rows="4"
                         />
                       </div>
+
+                      {/* Settings */}
+                      <div>
+                        <h3
+                          className={`text-lg font-medium border-b pb-2 ${
+                            isDarkMode
+                              ? "text-gray-300 border-gray-600"
+                              : "text-gray-700 border-gray-200"
+                          }`}
+                        >
+                          Settings
+                        </h3>
+                        <div className="space-y-4 mt-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <label
+                                className={`font-medium ${
+                                  isDarkMode ? "text-gray-300" : "text-gray-700"
+                                }`}
+                              >
+                                Public Profile
+                              </label>
+                              <p
+                                className={`text-sm ${
+                                  isDarkMode ? "text-gray-400" : "text-gray-500"
+                                }`}
+                              >
+                                Make your profile visible to employers
+                              </p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={profileData.isPublic}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    "isPublic",
+                                    e.target.checked
+                                  )
+                                }
+                                className="sr-only peer"
+                              />
+                              <div
+                                className={`w-11 h-6 rounded-full peer ${
+                                  isDarkMode ? "bg-gray-700" : "bg-gray-300"
+                                } peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600`}
+                              ></div>
+                            </label>
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <label
+                                className={`font-medium ${
+                                  isDarkMode ? "text-gray-300" : "text-gray-700"
+                                }`}
+                              >
+                                Seeking Opportunities
+                              </label>
+                              <p
+                                className={`text-sm ${
+                                  isDarkMode ? "text-gray-400" : "text-gray-500"
+                                }`}
+                              >
+                                Let employers know you're open to new
+                                opportunities
+                              </p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={profileData.seekingOpportunities}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    "seekingOpportunities",
+                                    e.target.checked
+                                  )
+                                }
+                                className="sr-only peer"
+                              />
+                              <div
+                                className={`w-11 h-6 rounded-full peer ${
+                                  isDarkMode ? "bg-gray-700" : "bg-gray-300"
+                                } peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600`}
+                              ></div>
+                            </label>
+                          </div>
+
+                          <div>
+                            <label
+                              className={`font-medium ${
+                                isDarkMode ? "text-gray-300" : "text-gray-700"
+                              }`}
+                            >
+                              Preferred Roles
+                            </label>
+                            <input
+                              type="text"
+                              value={profileData.preferredRoles.join(", ")}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  "preferredRoles",
+                                  e.target.value
+                                    .split(",")
+                                    .map((role) => role.trim())
+                                )
+                              }
+                              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                isDarkMode
+                                  ? "bg-gray-700 text-white border-gray-600"
+                                  : "bg-white text-gray-800 border-gray-300"
+                              }`}
+                              placeholder="e.g., Frontend Developer, Full Stack Engineer, DevOps"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label
+                                className={`font-medium ${
+                                  isDarkMode ? "text-gray-300" : "text-gray-700"
+                                }`}
+                              >
+                                Expected Salary
+                              </label>
+                              <input
+                                type="text"
+                                value={profileData.expectedSalary}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    "expectedSalary",
+                                    e.target.value
+                                  )
+                                }
+                                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                  isDarkMode
+                                    ? "bg-gray-700 text-white border-gray-600"
+                                    : "bg-white text-gray-800 border-gray-300"
+                                }`}
+                                placeholder="e.g., $80,000 - $100,000"
+                              />
+                            </div>
+                            <div>
+                              <label
+                                className={`font-medium ${
+                                  isDarkMode ? "text-gray-300" : "text-gray-700"
+                                }`}
+                              >
+                                Notice Period
+                              </label>
+                              <input
+                                type="text"
+                                value={profileData.noticePeriod}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    "noticePeriod",
+                                    e.target.value
+                                  )
+                                }
+                                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                  isDarkMode
+                                    ? "bg-gray-700 text-white border-gray-600"
+                                    : "bg-white text-gray-800 border-gray-300"
+                                }`}
+                                placeholder="e.g., 2 weeks, 1 month"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Save Button */}
@@ -1362,15 +2078,25 @@ const ResumeAnalysisPage = () => {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={handleSaveProfile}
-                        disabled={!profileData.fullName || !profileData.email}
+                        disabled={
+                          !profileData.fullName ||
+                          !profileData.email ||
+                          isSaving
+                        }
                         className={`w-full py-3 px-6 rounded-lg font-semibold text-white transition-colors flex items-center justify-center ${
-                          !profileData.fullName || !profileData.email
+                          !profileData.fullName ||
+                          !profileData.email ||
+                          isSaving
                             ? "bg-gray-400 cursor-not-allowed"
                             : "bg-blue-500 hover:bg-blue-600"
                         }`}
                       >
-                        <Save size={20} className="mr-2" />
-                        Save Profile
+                        {isSaving ? (
+                          <Loader2 size={20} className="animate-spin mr-2" />
+                        ) : (
+                          <Save size={20} className="mr-2" />
+                        )}
+                        {isSaving ? "Saving..." : "Save Profile"}
                       </motion.button>
                     </div>
                   </div>
@@ -1437,7 +2163,7 @@ const ResumeAnalysisPage = () => {
                             isDarkMode ? "text-gray-400" : "text-gray-600"
                           }`}
                         >
-                          Gemini AI extracts your information
+                          Extract and structure your information
                         </p>
                       </div>
                       <div
