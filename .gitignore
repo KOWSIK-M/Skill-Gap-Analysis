@@ -26,3 +26,5 @@ dist-ssr
 .env
 workskillai/.env
 .env.local
+
+.metadata/.plugins/org.eclipse.debug.core/.launches/workskillai - WorkskillaiApplication.launch
