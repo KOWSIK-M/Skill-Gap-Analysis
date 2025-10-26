@@ -1,0 +1,76 @@
+package com.cp.workskillai.controller;
+
+import com.cp.workskillai.models.UserSkill;
+import com.cp.workskillai.service.UserSkillService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Slf4j
+@RestController
+@RequestMapping("/api/skills")
+@RequiredArgsConstructor
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
+public class UserSkillController {
+    
+    private final UserSkillService userSkillService;
+    
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<UserSkill>> getUserSkills(@PathVariable String userId) {
+        try {
+            List<UserSkill> skills = userSkillService.getUserSkills(userId);
+            return ResponseEntity.ok(skills);
+        } catch (Exception e) {
+            log.error("Error fetching skills for user: {}", userId, e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    @PostMapping("/sync-from-profile/{userId}")
+    public ResponseEntity<Map<String, Object>> syncSkillsFromProfile(@PathVariable String userId) {
+        try {
+            // This would fetch the user's profile and sync skills
+            // For now, return success
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Skills synced successfully");
+            response.put("synced", true);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error syncing skills for user: {}", userId, e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    
+    @GetMapping("/user/{userId}/analytics")
+    public ResponseEntity<Map<String, Object>> getSkillAnalytics(@PathVariable String userId) {
+        try {
+            List<UserSkill> skills = userSkillService.getUserSkills(userId);
+            
+            Map<String, Object> analytics = new HashMap<>();
+            analytics.put("totalSkills", skills.size());
+            analytics.put("verifiedSkills", skills.stream().filter(UserSkill::getVerified).count());
+            analytics.put("averageProficiency", skills.stream().mapToInt(UserSkill::getProficiency).average().orElse(0));
+            analytics.put("skillDistribution", getSkillDistribution(skills));
+            
+            return ResponseEntity.ok(analytics);
+        } catch (Exception e) {
+            log.error("Error fetching skill analytics for user: {}", userId, e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    private Map<String, Long> getSkillDistribution(List<UserSkill> skills) {
+        Map<String, Long> distribution = new HashMap<>();
+        distribution.put("verified", skills.stream().filter(s -> "verified".equals(s.getStatus())).count());
+        distribution.put("pending", skills.stream().filter(s -> "pending".equals(s.getStatus())).count());
+        distribution.put("unverified", skills.stream().filter(s -> "unverified".equals(s.getStatus())).count());
+        distribution.put("needs_improvement", skills.stream().filter(s -> "needs_improvement".equals(s.getStatus())).count());
+        return distribution;
+    }
+}

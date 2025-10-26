@@ -1,0 +1,8 @@
+package com.cp.workskillai.config;
+
+public class Snippet {
+	public static void main(String[] args) {
+		RestTemplateConfig
+	}
+}
+

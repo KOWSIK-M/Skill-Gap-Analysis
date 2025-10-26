@@ -1,0 +1,59 @@
+// FlexibleSkillGapResponse.java
+package com.cp.workskillai.dto;
+
+import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Data
+public class SkillGapAnalysisResponse {
+    private String jobRole;
+    private Double matchScore;
+    private List<SkillAnalysis> requiredSkills;
+    private List<UserSkillAnalysis> currentSkills;
+    private List<SkillAnalysis> missingSkills;
+    private List<SkillAnalysis> partialMatchSkills;
+    private Map<String, Object> gapAnalysis;
+    private List<String> recommendations;
+    private String timeToCloseGap;
+    private String salaryImpact;
+    private String userId;
+    
+    private Map<String, Object> additionalProperties = new HashMap<>();
+    
+    @JsonAnySetter
+    public void setAdditionalProperty(String name, Object value) {
+        // Handle field name mapping
+        switch (name) {
+            case "match_score":
+                this.matchScore = value instanceof Number ? ((Number) value).doubleValue() : null;
+                break;
+            case "required_skills":
+                this.requiredSkills = (List<SkillAnalysis>) value;
+                break;
+            case "current_skills":
+                this.currentSkills = (List<UserSkillAnalysis>) value;
+                break;
+            case "missing_skills":
+                this.missingSkills = (List<SkillAnalysis>) value;
+                break;
+            case "partial_match_skills":
+                this.partialMatchSkills = (List<SkillAnalysis>) value;
+                break;
+            case "gap_analysis":
+                this.gapAnalysis = (Map<String, Object>) value;
+                break;
+            case "time_to_close_gap":
+                this.timeToCloseGap = (String) value;
+                break;
+            case "salary_impact":
+                this.salaryImpact = (String) value;
+                break;
+            default:
+                additionalProperties.put(name, value);
+        }
+    }
+}

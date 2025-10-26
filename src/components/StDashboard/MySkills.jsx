@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Layout from "./Layout";
+import { useTheme } from "../Home/ThemeContext";
 import {
   FileText,
   Search,
@@ -41,10 +42,10 @@ import {
 import { toast, Toaster } from "react-hot-toast";
 
 export default function MySkills() {
+  const { isDarkMode } = useTheme();
   const [skills, setSkills] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useState(true);
   const [showDownloadSuccess, setShowDownloadSuccess] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showExamModal, setShowExamModal] = useState(false);
@@ -705,7 +706,10 @@ export default function MySkills() {
     <div className="flex-shrink-0 w-full max-w-2xl mx-auto text-center py-12">
       {type === "unverified" ? (
         <>
-          <Target size={64} className="mx-auto text-gray-400 mb-4" />
+          <Target
+            size={64}
+            className="mx-auto text-gray-400 dark:text-gray-500 mb-4"
+          />
           <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">
             {searchTerm
               ? "No unverified skills found"
@@ -739,7 +743,10 @@ export default function MySkills() {
         </>
       ) : (
         <>
-          <Award size={64} className="mx-auto text-gray-400 mb-4" />
+          <Award
+            size={64}
+            className="mx-auto text-gray-400 dark:text-gray-500 mb-4"
+          />
           <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">
             {searchTerm ? "No verified skills found" : "No verified skills yet"}
           </h3>
@@ -901,7 +908,7 @@ export default function MySkills() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               className={`rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto ${
-                isDarkMode ? "bg-gray-800" : "bg-white"
+                isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
               }`}
             >
               <div className="flex justify-between items-center mb-6">
@@ -1075,19 +1082,6 @@ export default function MySkills() {
                   className={loading ? "animate-spin" : ""}
                 />
               </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={loadSkills}
-                disabled={loading}
-                className="p-3 bg-white/20 rounded-xl hover:bg-white/30 transition-colors"
-                title="Refresh Skills"
-              >
-                <RefreshCw
-                  size={24}
-                  className={loading ? "animate-spin" : ""}
-                />
-              </motion.button>
             </div>
           </div>
         </motion.section>
@@ -1096,7 +1090,7 @@ export default function MySkills() {
         <motion.section
           variants={itemVariants}
           className={`rounded-2xl p-6 shadow-lg ${
-            isDarkMode ? "bg-gray-800" : "bg-white"
+            isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
           }`}
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
@@ -1127,12 +1121,18 @@ export default function MySkills() {
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex space-x-1 mb-6 bg-gray-200 dark:bg-gray-700 p-1 rounded-xl">
+          <div
+            className={`flex space-x-1 mb-6 p-1 rounded-xl ${
+              isDarkMode ? "bg-gray-700" : "bg-gray-200"
+            }`}
+          >
             <button
               onClick={() => setActiveTab("unverified")}
               className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-300 ${
                 activeTab === "unverified"
-                  ? "bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-md"
+                  ? isDarkMode
+                    ? "bg-gray-800 text-blue-400 shadow-md"
+                    : "bg-white text-blue-600 shadow-md"
                   : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
@@ -1142,8 +1142,12 @@ export default function MySkills() {
                 <span
                   className={`px-2 py-1 rounded-full text-xs ${
                     activeTab === "unverified"
-                      ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400"
-                      : "bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400"
+                      ? isDarkMode
+                        ? "bg-blue-900 text-blue-400"
+                        : "bg-blue-100 text-blue-600"
+                      : isDarkMode
+                      ? "bg-gray-600 text-gray-400"
+                      : "bg-gray-300 text-gray-600"
                   }`}
                 >
                   {unverifiedSkills.length}
@@ -1155,7 +1159,9 @@ export default function MySkills() {
               onClick={() => setActiveTab("verified")}
               className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-300 ${
                 activeTab === "verified"
-                  ? "bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 shadow-md"
+                  ? isDarkMode
+                    ? "bg-gray-800 text-green-400 shadow-md"
+                    : "bg-white text-green-600 shadow-md"
                   : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
@@ -1165,8 +1171,12 @@ export default function MySkills() {
                 <span
                   className={`px-2 py-1 rounded-full text-xs ${
                     activeTab === "verified"
-                      ? "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400"
-                      : "bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400"
+                      ? isDarkMode
+                        ? "bg-green-900 text-green-400"
+                        : "bg-green-100 text-green-600"
+                      : isDarkMode
+                      ? "bg-gray-600 text-gray-400"
+                      : "bg-gray-300 text-gray-600"
                   }`}
                 >
                   {verifiedSkills.length}
@@ -1248,10 +1258,24 @@ export default function MySkills() {
               ? unverifiedSkills.length
               : verifiedSkills.length) > 3 && (
               <>
-                <div className="absolute left-0 top-0 bottom-6 w-8 bg-gradient-to-r from-gray-100 dark:from-gray-800 to-transparent pointer-events-none"></div>
-                <div className="absolute right-0 top-0 bottom-6 w-8 bg-gradient-to-l from-gray-100 dark:from-gray-800 to-transparent pointer-events-none"></div>
+                <div
+                  className={`absolute left-0 top-0 bottom-6 w-8 bg-gradient-to-r ${
+                    isDarkMode ? "from-gray-800" : "from-gray-100"
+                  } to-transparent pointer-events-none`}
+                ></div>
+                <div
+                  className={`absolute right-0 top-0 bottom-6 w-8 bg-gradient-to-l ${
+                    isDarkMode ? "from-gray-800" : "from-gray-100"
+                  } to-transparent pointer-events-none`}
+                ></div>
                 <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-gray-700 dark:bg-gray-600 text-white text-xs px-3 py-1 rounded-full flex items-center space-x-1">
+                  <div
+                    className={`text-xs px-3 py-1 rounded-full flex items-center space-x-1 ${
+                      isDarkMode
+                        ? "bg-gray-700 text-white"
+                        : "bg-gray-600 text-white"
+                    }`}
+                  >
                     <ArrowRight size={12} className="rotate-180" />
                     <span>Scroll for more skills</span>
                     <ArrowRight size={12} />
@@ -1263,14 +1287,24 @@ export default function MySkills() {
 
           {/* Skills summary */}
           <div className="mt-6 text-center">
-            <div className="inline-flex flex-wrap justify-center items-center gap-4 text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-full">
+            <div
+              className={`inline-flex flex-wrap justify-center items-center gap-4 text-sm px-4 py-2 rounded-full ${
+                isDarkMode
+                  ? "bg-gray-700 text-gray-400"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
               <span className="flex items-center space-x-1">
                 <Award className="text-green-500" size={16} />
                 <span>
                   <strong>{verifiedSkills.length}</strong> verified
                 </span>
               </span>
-              <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+              <div
+                className={`w-1 h-1 rounded-full ${
+                  isDarkMode ? "bg-gray-500" : "bg-gray-400"
+                }`}
+              ></div>
               <span className="flex items-center space-x-1">
                 <Target className="text-blue-500" size={16} />
                 <span>
@@ -1279,7 +1313,11 @@ export default function MySkills() {
               </span>
               {searchTerm && (
                 <>
-                  <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                  <div
+                    className={`w-1 h-1 rounded-full ${
+                      isDarkMode ? "bg-gray-500" : "bg-gray-400"
+                    }`}
+                  ></div>
                   <span>Search: "{searchTerm}"</span>
                 </>
               )}
@@ -1293,7 +1331,9 @@ export default function MySkills() {
             {/* Skill Distribution Chart */}
             <motion.section
               variants={itemVariants}
-              className="rounded-2xl p-6 bg-white/10 dark:bg-gray-800/30 backdrop-blur-lg border border-white/10 shadow-xl"
+              className={`rounded-2xl p-6 shadow-lg ${
+                isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+              }`}
             >
               <h2 className="text-xl font-bold mb-4 flex items-center text-gray-900 dark:text-white">
                 <BarChart3 className="mr-2" size={24} />
@@ -1335,7 +1375,11 @@ export default function MySkills() {
             {skillScores.length > 0 && (
               <motion.section
                 variants={itemVariants}
-                className="rounded-2xl p-6 bg-white/10 dark:bg-gray-800/30 backdrop-blur-lg border border-white/10 shadow-xl"
+                className={`rounded-2xl p-6 shadow-lg ${
+                  isDarkMode
+                    ? "bg-gray-800 text-white"
+                    : "bg-white text-gray-900"
+                }`}
               >
                 <h2 className="text-xl font-bold mb-4 flex items-center text-gray-900 dark:text-white">
                   <TrendingUp className="mr-2" size={24} />
@@ -1392,7 +1436,7 @@ export default function MySkills() {
         <motion.section
           variants={itemVariants}
           className={`rounded-2xl p-6 shadow-lg ${
-            isDarkMode ? "bg-gray-800" : "bg-white"
+            isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
           }`}
         >
           <h2 className="text-xl font-bold mb-6 flex items-center text-gray-900 dark:text-white">
@@ -1426,7 +1470,7 @@ export default function MySkills() {
           <motion.section
             variants={itemVariants}
             className={`rounded-2xl p-6 shadow-lg ${
-              isDarkMode ? "bg-gray-800" : "bg-white"
+              isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
             }`}
           >
             <div className="flex items-center justify-between mb-6">

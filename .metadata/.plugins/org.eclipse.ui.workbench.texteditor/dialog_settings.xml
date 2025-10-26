@@ -1,18 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
-		<item key="selection" value=""/>
+		<item key="selection" value="v1"/>
 		<item key="wrap" value="true"/>
 		<item key="casesensitive" value="false"/>
 		<item key="wholeword" value="false"/>
 		<item key="incremental" value="false"/>
 		<item key="isRegEx" value="false"/>
 		<list key="findhistory">
-			<item value="updateExa"/>
-			<item value="sync"/>
-			<item value="createDe"/>
-			<item value="data"/>
-			<item value="mongo"/>
+			<item value="V1"/>
+			<item value="gemini"/>
+			<item value="hf-inference"/>
+			<item value="generateWithH"/>
+			<item value="generateWith"/>
+			<item value="generateW"/>
+			<item value="generate"/>
+			<item value="model"/>
+			<item value="models"/>
+			<item value="company"/>
+			<item value="generate-"/>
+			<item value="parseGene"/>
+			<item value="parseGen"/>
+			<item value="parse"/>
+			<item value="format"/>
 		</list>
 		<list key="replacehistory">
 		</list>

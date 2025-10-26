@@ -105,8 +105,6 @@ export default function Layout({ children }) {
     }
   };
 
-  console.log("Current theme:", isDarkMode ? "dark" : "light");
-
   return (
     
     <div
