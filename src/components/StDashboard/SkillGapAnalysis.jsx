@@ -1134,8 +1134,10 @@ export default function SkillGapAnalysis() {
   const RoleSelection = () => (
     <motion.section
       variants={itemVariants}
-      className={`rounded-2xl p-6 shadow-2xl border ${
-        isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+      className={`rounded-2xl p-6 shadow-2xl border transition-colors duration-300 ${
+        isDarkMode
+          ? "bg-gray-800 border-gray-700 hover:border-gray-600"
+          : "bg-white border-gray-200 hover:border-gray-300"
       }`}
     >
       <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-end">
@@ -1383,18 +1385,21 @@ export default function SkillGapAnalysis() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="space-y-6 p-6"
+        className={`space-y-6 p-6 min-h-screen ${
+          isDarkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
+        }`}
         ref={analysisRef}
       >
-        {/* Header */}
+        {/* Header - Keep existing gradient */}
         <motion.section
           variants={itemVariants}
           className="rounded-2xl p-6 bg-gradient-to-r from-blue-600 to-purple-700 text-white shadow-xl"
         >
+          {/* ... existing header content ... */}
           <div className="flex items-center justify-between">
             <div>
               <motion.h1
-                className="text-2xl lg:text-3xl font-bold mb-2"
+                className="text-2xl lg:text-3xl font-bold mb-2 text-white"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
               >
@@ -1421,7 +1426,7 @@ export default function SkillGapAnalysis() {
           </div>
         </motion.section>
 
-        {/* Role Selection and Analyze button (keeps existing UI) */}
+        {/* Role Selection - Already has dark mode */}
         <RoleSelection />
 
         {/* Current Role Analysis Section */}
@@ -1430,18 +1435,18 @@ export default function SkillGapAnalysis() {
             variants={itemVariants}
             className={`rounded-2xl p-6 shadow-2xl border ${
               isDarkMode
-                ? "bg-gradient-to-br from-green-900/20 to-green-800/30 border-green-500/30"
-                : "bg-gradient-to-br from-green-50 to-green-100 border-green-200"
+                ? "bg-gradient-to-br from-green-900/20 to-green-800/30 border-green-500/30 text-white"
+                : "bg-gradient-to-br from-green-50 to-green-100 border-green-200 text-gray-900"
             }`}
           >
-            <h2 className="text-2xl font-bold mb-4 flex items-center text-gray-900 dark:text-white">
+            {/* ... existing content ... */}
+            <h2 className="text-2xl font-bold mb-4 flex items-center">
               <Target className="mr-3 text-green-500" size={28} />
               My Current Role Analysis
             </h2>
 
             {currentRoleAnalysis.hasAnalysis ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Current Role Match Score */}
                 <div className="text-center">
                   <div className="text-4xl font-bold text-green-600 dark:text-green-400">
                     {currentRoleAnalysis.matchScore}%
@@ -1451,13 +1456,12 @@ export default function SkillGapAnalysis() {
                   </div>
                 </div>
 
-                {/* Quick Stats */}
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">
                       Required Skills:
                     </span>
-                    <span className="font-semibold">
+                    <span className="font-semibold text-gray-900 dark:text-white">
                       {currentRoleAnalysis.gapAnalysis?.totalSkillsRequired ||
                         0}
                     </span>
@@ -1480,7 +1484,6 @@ export default function SkillGapAnalysis() {
                   </div>
                 </div>
 
-                {/* Actions */}
                 <div className="flex items-center justify-center">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -1522,11 +1525,12 @@ export default function SkillGapAnalysis() {
                 whileHover="hover"
                 className={`rounded-2xl p-6 shadow-2xl border-2 ${
                   isDarkMode
-                    ? "bg-gradient-to-br from-gray-800 to-gray-900 border-blue-500/30"
-                    : "bg-gradient-to-br from-white to-blue-50 border-blue-200"
+                    ? "bg-gradient-to-br from-gray-800 to-gray-900 border-blue-500/30 text-white"
+                    : "bg-gradient-to-br from-white to-blue-50 border-blue-200 text-gray-900"
                 }`}
               >
-                <h3 className="text-xl font-bold mb-6 flex items-center text-gray-900 dark:text-white">
+                {/* ... existing content ... */}
+                <h3 className="text-xl font-bold mb-6 flex items-center">
                   <Award className="mr-3 text-amber-500" size={24} />
                   Career Readiness Score
                 </h3>
@@ -1536,6 +1540,17 @@ export default function SkillGapAnalysis() {
                     <div className="w-40 h-40">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
+                          <Tooltip
+                            contentStyle={{
+                              background: isDarkMode ? "#374151" : "#ffffff",
+                              border: isDarkMode
+                                ? "1px solid #4B5563"
+                                : "1px solid #e5e7eb",
+                              borderRadius: "8px",
+                              color: isDarkMode ? "#ffffff" : "#1f2937",
+                              boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+                            }}
+                          />
                           <Pie
                             data={chartData}
                             cx="50%"
@@ -1579,55 +1594,79 @@ export default function SkillGapAnalysis() {
                 </div>
 
                 <div className="mt-4">
-                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h4 className="text-lg font-semibold">
                     Analysis Overview
                   </h4>
                   <div className="grid grid-cols-2 gap-4 mt-2">
-                    <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow">
-                      <div className="text-sm font-medium text-gray-500">
+                    <div
+                      className={`p-4 rounded-lg shadow ${
+                        isDarkMode ? "bg-gray-700" : "bg-white"
+                      }`}
+                    >
+                      <div className="text-sm font-medium text-gray-300">
                         Matched Skills
                       </div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <div className="text-2xl font-bold">
                         {currentRoleAnalysis.gapAnalysis?.skillsMatched || 0}
                       </div>
                     </div>
-                    <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow">
-                      <div className="text-sm font-medium text-gray-500">
+                    <div
+                      className={`p-4 rounded-lg shadow ${
+                        isDarkMode ? "bg-gray-700" : "bg-white"
+                      }`}
+                    >
+                      <div className="text-sm font-medium text-gray-300">
                         Missing Skills
                       </div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <div className="text-2xl font-bold">
                         {missingSkills.length}
                       </div>
                     </div>
-                    <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow">
-                      <div className="text-sm font-medium text-gray-500">
+                    <div
+                      className={`p-4 rounded-lg shadow ${
+                        isDarkMode ? "bg-gray-700" : "bg-white"
+                      }`}
+                    >
+                      <div className="text-sm font-medium text-gray-300">
                         Total Required Skills
                       </div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <div className="text-2xl font-bold">
                         {matchedSkills.length + missingSkills.length}
                       </div>
                     </div>
-                    <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow">
-                      <div className="text-sm font-medium text-gray-500">
+                    <div
+                      className={`p-4 rounded-lg shadow ${
+                        isDarkMode ? "bg-gray-700" : "bg-white"
+                      }`}
+                    >
+                      <div className="text-sm font-medium text-gray-300">
                         Time to Close Gap
                       </div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <div className="text-2xl font-bold">
                         {timeToCloseGap}
                       </div>
                     </div>
-                    <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow">
-                      <div className="text-sm font-medium text-gray-500">
+                    <div
+                      className={`p-4 rounded-lg shadow ${
+                        isDarkMode ? "bg-gray-700" : "bg-white"
+                      }`}
+                    >
+                      <div className="text-sm font-medium text-gray-300">
                         Salary Impact
                       </div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <div className="text-2xl font-bold">
                         {salaryImpact}
                       </div>
                     </div>
-                    <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow">
-                      <div className="text-sm font-medium text-gray-500">
+                    <div
+                      className={`p-4 rounded-lg shadow ${
+                        isDarkMode ? "bg-gray-700" : "bg-white"
+                      }`}
+                    >
+                      <div className="text-sm font-medium text-gray-300">
                         Recommendations
                       </div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <div className="text-2xl font-bold">
                         {recommendations.length}
                       </div>
                     </div>
@@ -1643,11 +1682,11 @@ export default function SkillGapAnalysis() {
                 whileHover="hover"
                 className={`rounded-2xl p-6 shadow-2xl border-2 ${
                   isDarkMode
-                    ? "bg-gradient-to-br from-gray-800 to-gray-900 border-blue-500/30"
-                    : "bg-gradient-to-br from-white to-blue-50 border-blue-200"
+                    ? "bg-gradient-to-br from-gray-800 to-gray-900 border-blue-500/30 text-white"
+                    : "bg-gradient-to-br from-white to-blue-50 border-blue-200 text-gray-900"
                 }`}
               >
-                <h3 className="text-xl font-bold mb-6 flex items-center text-gray-900 dark:text-white">
+                <h3 className="text-xl font-bold mb-6 flex items-center">
                   <BarChart3 className="mr-3 text-amber-500" size={24} />
                   Skills Comparison
                 </h3>
@@ -1660,74 +1699,88 @@ export default function SkillGapAnalysis() {
                       <tr>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                         >
                           Skill
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                         >
                           Category
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                         >
                           Importance
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                         >
                           Your Proficiency
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                         >
                           Required Proficiency
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                         >
                           Gap
                         </th>
                         <th
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                         >
                           Status
                         </th>
                       </tr>
                     </thead>
-                    <tbody className={isDarkMode ? "bg-gray-800" : "bg-white"}>
+                    <tbody
+                      className={
+                        isDarkMode
+                          ? "bg-gray-800 divide-gray-700 text-white"
+                          : "bg-white divide-gray-200 text-gray-900"
+                      }
+                    >
                       {comparisonData.map((skill, index) => (
                         <tr
                           key={index}
-                          className={index % 2 === 0 ? "bg-gray-50" : ""}
+                          className={
+                            isDarkMode
+                              ? index % 2 === 0
+                                ? "bg-gray-800"
+                                : "bg-gray-700"
+                              : index % 2 === 0
+                              ? "bg-gray-50"
+                              : "bg-white"
+                          }
                         >
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             {skill.skill}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                             {skill.category}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <span
                               className={getImportanceColor(skill.importance)}
                             >
                               {skill.importance}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
                             {skill.proficiency}%
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
                             {skill.requiredProficiency}%
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
                             {skill.gap}%
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -1759,7 +1812,7 @@ export default function SkillGapAnalysis() {
                     : "bg-gradient-to-br from-white to-blue-50 border-blue-200"
                 }`}
               >
-                <h3 className="text-xl font-bold mb-6 flex items-center text-gray-900 dark:text-white">
+                <h3 className="text-xl font-bold mb-6 flex items-center">
                   <TrendingUp className="mr-3 text-amber-500" size={24} />
                   Market Insights
                 </h3>
@@ -1768,20 +1821,28 @@ export default function SkillGapAnalysis() {
                   {marketData.map((data, index) => (
                     <div
                       key={index}
-                      className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow"
+                      className={`p-4 rounded-lg shadow ${
+                        isDarkMode
+                          ? "bg-gray-700 text-white"
+                          : "bg-white text-gray-900"
+                      }`}
                     >
-                      <div className="text-sm font-medium text-gray-500">
+                      <div className="text-sm font-medium">
                         {data.skill}
                       </div>
                       <div className="flex justify-between items-center mt-2">
-                        <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                          {data.demand}%
-                        </div>
-                        <div className="text-xs font-semibold rounded-full bg-green-100 text-green-800 px-3 py-1">
+                        <div className="text-2xl font-bold">{data.demand}%</div>
+                        <div
+                          className={`text-xs font-semibold rounded-full px-3 py-1 ${
+                            isDarkMode
+                              ? "bg-green-900/30 text-green-400"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
                           High Demand
                         </div>
                       </div>
-                      <div className="mt-2 text-sm text-gray-500">
+                      <div className="mt-2 text-sm text-gray-500 dark:text-gray-300">
                         Estimated Salary: ${data.salary}K
                       </div>
                     </div>
@@ -1798,24 +1859,24 @@ export default function SkillGapAnalysis() {
               whileHover="hover"
               className={`rounded-2xl p-6 shadow-2xl border-2 ${
                 isDarkMode
-                  ? "bg-gradient-to-br from-gray-800 to-gray-900 border-blue-500/30"
-                  : "bg-gradient-to-br from-white to-blue-50 border-blue-200"
+                  ? "bg-gradient-to-br from-gray-800 to-gray-900 border-blue-500/30 text-white"
+                  : "bg-gradient-to-br from-white to-blue-50 border-blue-200 text-gray-900"
               }`}
             >
-              <h3 className="text-xl font-bold mb-6 flex items-center text-gray-900 dark:text-white">
+              <h3 className="text-xl font-bold mb-6 flex items-center">
                 <Lightbulb className="mr-3 text-amber-500" size={24} />
                 Next Steps
               </h3>
 
               <div className="space-y-4">
-                <p className="text-gray-700 dark:text-gray-300">
+                <p className="text-gray-300 dark:text-gray-300">
                   Based on your analysis, here are some recommended actions to
                   improve your skills and increase your career opportunities:
                 </p>
 
                 <ul className="list-disc list-inside space-y-2">
                   {recommendations.map((rec, index) => (
-                    <li key={index} className="text-gray-900 dark:text-white">
+                    <li key={index} className="">
                       {rec}
                     </li>
                   ))}
@@ -1836,7 +1897,11 @@ export default function SkillGapAnalysis() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={exportToPDF}
-                  className="flex-1 px-6 py-3 rounded-xl font-bold text-lg transition-all duration-300 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white shadow-md"
+                  className={`flex-1 px-6 py-3 rounded-xl font-bold text-lg transition-all duration-300 shadow-md ${
+                    isDarkMode
+                      ? "bg-gray-700 text-white hover:bg-gray-600"
+                      : "bg-gray-200 text-gray-900 hover:bg-gray-300"
+                  }`}
                 >
                   Download PDF Report
                 </motion.button>
@@ -1845,7 +1910,7 @@ export default function SkillGapAnalysis() {
           </>
         )}
 
-        {/* Application Form (conditionally rendered) */}
+        {/* Application Form */}
         <AnimatePresence>
           {showApplicationForm && (
             <motion.section
@@ -1854,11 +1919,11 @@ export default function SkillGapAnalysis() {
               exit={{ opacity: 0, y: 30 }}
               className={`rounded-2xl p-6 shadow-2xl border ${
                 isDarkMode
-                  ? "bg-gray-800 border-gray-700"
-                  : "bg-white border-gray-200"
+                  ? "bg-gray-800 border-gray-700 text-white"
+                  : "bg-white border-gray-200 text-gray-900"
               }`}
             >
-              <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+              <h2 className="text-2xl font-bold mb-4">
                 {applicationSubmitted
                   ? "Application Submitted"
                   : "Apply for Your Target Role"}
@@ -1867,7 +1932,7 @@ export default function SkillGapAnalysis() {
               {applicationSubmitted ? (
                 <div className="text-center py-10">
                   <CheckCircle size={48} className="mx-auto text-green-500" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mt-4">
+                  <h3 className="text-lg font-semibold mt-4">
                     Thank you for applying!
                   </h3>
                   <p className="text-gray-500 dark:text-gray-300 mt-2">
@@ -1877,134 +1942,48 @@ export default function SkillGapAnalysis() {
                 </div>
               ) : (
                 <form onSubmit={handleApplicationSubmit} className="space-y-4">
+                  {/* Form fields with dark mode support */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        name="fullName"
-                        value={applicationForm.fullName}
-                        onChange={handleInputChange}
-                        required
-                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 font-medium ${
-                          isDarkMode
-                            ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                        } focus:outline-none`}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={applicationForm.email}
-                        onChange={handleInputChange}
-                        required
-                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 font-medium ${
-                          isDarkMode
-                            ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                        } focus:outline-none`}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                        Phone
-                      </label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={applicationForm.phone}
-                        onChange={handleInputChange}
-                        required
-                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 font-medium ${
-                          isDarkMode
-                            ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                        } focus:outline-none`}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                        Location
-                      </label>
-                      <input
-                        type="text"
-                        name="location"
-                        value={applicationForm.location}
-                        onChange={handleInputChange}
-                        required
-                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 font-medium ${
-                          isDarkMode
-                            ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                        } focus:outline-none`}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                        Current Role
-                      </label>
-                      <input
-                        type="text"
-                        name="currentRole"
-                        value={applicationForm.currentRole}
-                        onChange={handleInputChange}
-                        required
-                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 font-medium ${
-                          isDarkMode
-                            ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                        } focus:outline-none`}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                        Total Experience
-                      </label>
-                      <input
-                        type="text"
-                        name="totalExperience"
-                        value={applicationForm.totalExperience}
-                        onChange={handleInputChange}
-                        required
-                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 font-medium ${
-                          isDarkMode
-                            ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                        } focus:outline-none`}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
-                        Education
-                      </label>
-                      <input
-                        type="text"
-                        name="education"
-                        value={applicationForm.education}
-                        onChange={handleInputChange}
-                        required
-                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 font-medium ${
-                          isDarkMode
-                            ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                        } focus:outline-none`}
-                      />
-                    </div>
+                    {/*
+                      { label: "Full Name", name: "fullName", type: "text", required: true },
+                      { label: "Email", name: "email", type: "email", required: true },
+                      { label: "Phone", name: "phone", type: "tel", required: true },
+                      { label: "Location", name: "location", type: "text", required: true },
+                      { label: "Current Role", name: "currentRole", type: "text", required: true },
+                      { label: "Total Experience", name: "totalExperience", type: "text", required: true },
+                      { label: "Education", name: "education", type: "text", required: true },
+                    */}
+                    {[
+                      "fullName",
+                      "email",
+                      "phone",
+                      "location",
+                      "currentRole",
+                      "totalExperience",
+                      "education",
+                    ].map((field, idx) => (
+                      <div key={field}>
+                        <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
+                          {field.charAt(0).toUpperCase() +
+                            field.slice(1).replace(/([A-Z])/g, " $1")}
+                        </label>
+                        <input
+                          type={field === "email" ? "email" : "text"}
+                          name={field}
+                          value={applicationForm[field]}
+                          onChange={handleInputChange}
+                          required
+                          className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 font-medium ${
+                            isDarkMode
+                              ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
+                              : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
+                          } focus:outline-none`}
+                        />
+                      </div>
+                    ))}
                   </div>
 
+                  {/* Cover Letter */}
                   <div>
                     <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
                       Cover Letter
@@ -2022,30 +2001,33 @@ export default function SkillGapAnalysis() {
                     />
                   </div>
 
+                  {/* Additional form sections with dark mode */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
                         Availability
                       </label>
-                      <select
-                        name="availability"
-                        value={applicationForm.availability}
-                        onChange={handleInputChange}
-                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 appearance-none font-medium ${
-                          isDarkMode
-                            ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                            : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
-                        } focus:outline-none`}
-                      >
-                        <option value="2 weeks">Within 2 weeks</option>
-                        <option value="1 month">In 1 month</option>
-                        <option value="2 months">In 2 months</option>
-                        <option value="3 months">In 3 months</option>
-                      </select>
-                      <ChevronDown
-                        size={24}
-                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
-                      />
+                      <div className="relative">
+                        <select
+                          name="availability"
+                          value={applicationForm.availability}
+                          onChange={handleInputChange}
+                          className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 appearance-none font-medium ${
+                            isDarkMode
+                              ? "bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
+                              : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20"
+                          } focus:outline-none`}
+                        >
+                          <option value="2 weeks">Within 2 weeks</option>
+                          <option value="1 month">In 1 month</option>
+                          <option value="2 months">In 2 months</option>
+                          <option value="3 months">In 3 months</option>
+                        </select>
+                        <ChevronDown
+                          size={24}
+                          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+                        />
+                      </div>
                     </div>
 
                     <div>
@@ -2066,6 +2048,7 @@ export default function SkillGapAnalysis() {
                     </div>
                   </div>
 
+                  {/* Referral Source */}
                   <div>
                     <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
                       Referral Source
@@ -2083,6 +2066,7 @@ export default function SkillGapAnalysis() {
                     />
                   </div>
 
+                  {/* Portfolio and LinkedIn URLs */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
@@ -2119,6 +2103,7 @@ export default function SkillGapAnalysis() {
                     </div>
                   </div>
 
+                  {/* Submit Button */}
                   <div className="mt-4">
                     <motion.button
                       whileHover={{ scale: 1.05 }}
@@ -2139,7 +2124,6 @@ export default function SkillGapAnalysis() {
   );
 }
 
-// Your existing variants and helper components
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {

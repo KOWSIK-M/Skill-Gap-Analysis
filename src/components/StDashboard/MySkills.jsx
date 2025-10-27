@@ -1094,7 +1094,7 @@ export default function MySkills() {
           }`}
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-            <h2 className="text-xl font-bold flex items-center text-gray-900 dark:text-white">
+            <h2 className="text-xl font-bold flex items-center">
               <Brain className="mr-2" size={24} />
               My Skills ({skills.length})
             </h2>
@@ -1335,7 +1335,7 @@ export default function MySkills() {
                 isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
               }`}
             >
-              <h2 className="text-xl font-bold mb-4 flex items-center text-gray-900 dark:text-white">
+              <h2 className="text-xl font-bold mb-4 flex items-center">
                 <BarChart3 className="mr-2" size={24} />
                 Skill Verification Status
               </h2>
@@ -1381,7 +1381,7 @@ export default function MySkills() {
                     : "bg-white text-gray-900"
                 }`}
               >
-                <h2 className="text-xl font-bold mb-4 flex items-center text-gray-900 dark:text-white">
+                <h2 className="text-xl font-bold mb-4 flex items-center">
                   <TrendingUp className="mr-2" size={24} />
                   Verified Skill Scores
                 </h2>
@@ -1439,7 +1439,7 @@ export default function MySkills() {
             isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
           }`}
         >
-          <h2 className="text-xl font-bold mb-6 flex items-center text-gray-900 dark:text-white">
+          <h2 className="text-xl font-bold mb-6 flex items-center">
             <Lightbulb className="mr-2" size={24} />
             Quick Insights
           </h2>
