@@ -212,11 +212,6 @@ The system provides intelligent insights like:
 
 ## 🐛 Known Issues & Solutions
 
-### Fixed Issues
-- **450% Progress Bug**: Resolved with proper progress calculation
-- **Course Status Management**: Implemented proper state transitions
-- **Job Role Display**: Added current and target role visualization
-
 ### Current Limitations
 - Limited to IT job roles (expandable)
 - Course data requires periodic updates
