@@ -224,7 +224,7 @@ The system provides intelligent insights like:
 
 ## 🔮 Future Enhancements
 
-- [ X ] **Skill Assessment Tests**: Validate skill proficiency
+- [X] **Skill Assessment Tests**: Validate skill proficiency
 - [ ] **Peer Learning**: Connect with others learning same skills
 - [ ] **Job Market Integration**: Real-time job requirement updates
 - [ ] **Mobile App**: Learn on-the-go with mobile application
