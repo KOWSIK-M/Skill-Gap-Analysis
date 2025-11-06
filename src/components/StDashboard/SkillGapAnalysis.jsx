@@ -1142,7 +1142,7 @@ export default function SkillGapAnalysis() {
     >
       <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-end">
         <div className="flex-1">
-          <h2 className="text-2xl font-bold mb-4 flex items-center text-gray-900 dark:text-white">
+          <h2 className="text-2xl font-bold mb-4 flex items-center">
             <Target className="mr-3" size={28} />
             Select Your Target Role
           </h2>

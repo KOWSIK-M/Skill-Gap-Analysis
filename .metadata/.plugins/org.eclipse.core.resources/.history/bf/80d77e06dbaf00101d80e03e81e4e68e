@@ -1,5 +1,0 @@
-package com.cp.workskillai.repository;
-
-public interface UserSkillRepository extends MongoRepository{
-
-}
