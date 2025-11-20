@@ -190,65 +190,39 @@ return "Software Engineer";
 }
 }
     
-private List<CourseRecommendation> extractCoursesFromMlResponse(Map<String, Object> mlResponse) {
-    try {
-        List<Map<String, Object>> courseData = (List<Map<String, Object>>) mlResponse.get("courseRecommendations");
-        if (courseData == null) {
-            log.warn("No course recommendations found in ML response");
+    private List<CourseRecommendation> extractCoursesFromMlResponse(Map<String, Object> mlResponse) {
+        try {
+            List<Map<String, Object>> courseData = (List<Map<String, Object>>) mlResponse.get("courseRecommendations");
+            if (courseData == null) return new ArrayList<>();
+            
+            return courseData.stream()
+                    .map(course -> CourseRecommendation.builder()
+                            .id((String) course.get("id"))
+                            .skillId((String) course.get("skillId"))
+                            .skillName((String) course.get("skillName"))
+                            .platform((String) course.get("platform"))
+                            .title((String) course.get("title"))
+                            .instructor((String) course.get("instructor"))
+                            .duration((String) course.get("duration"))
+                            .difficulty((String) course.get("difficulty"))
+                            .rating(course.get("rating") != null ? ((Number) course.get("rating")).doubleValue() : 4.0)
+                            .studentCount(course.get("students") != null ? ((Number) course.get("students")).intValue() : 1000)
+                            .price((String) course.get("price"))
+                            .originalPrice((String) course.get("originalPrice"))
+                            .url((String) course.get("url"))
+                            .features((List<String>) course.get("features"))
+                            .durationCategory((String) course.get("durationCategory"))
+                            .platformIcon((String) course.get("platformIcon"))
+                            .description((String) course.get("description"))
+                            .relevanceScore(course.get("relevanceScore") != null ? 
+                                    ((Number) course.get("relevanceScore")).doubleValue() : 0.8)
+                            .build())
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error extracting courses from ML response: {}", e.getMessage());
             return new ArrayList<>();
         }
-        
-        log.info("📚 Found {} courses in ML response", courseData.size());
-        
-        List<CourseRecommendation> courses = courseData.stream()
-                .map(course -> {
-                    try {
-                        // Debug: log what we're receiving
-                        log.info("📋 Course data: {}", course.keySet());
-                        
-                        CourseRecommendation courseRec = CourseRecommendation.builder()
-                                .id((String) course.get("id"))
-                                .skillId((String) course.get("skillId")) // This is from Python
-                                .skillName((String) course.get("skillId")) // Use skillId as skillName since Python doesn't send skillName
-                                .platform((String) course.get("platform"))
-                                .title((String) course.get("title"))
-                                .instructor((String) course.get("instructor"))
-                                .duration((String) course.get("duration"))
-                                .difficulty((String) course.get("difficulty"))
-                                .rating(course.get("rating") != null ? ((Number) course.get("rating")).doubleValue() : 4.0)
-                                .studentCount(course.get("students") != null ? ((Number) course.get("students")).intValue() : 
-                                             course.get("studentCount") != null ? ((Number) course.get("studentCount")).intValue() : 1000)
-                                .price((String) course.get("price"))
-                                .originalPrice((String) course.get("originalPrice"))
-                                .url((String) course.get("url"))
-                                .features((List<String>) course.get("features"))
-                                .durationCategory((String) course.get("durationCategory"))
-                                .platformIcon((String) course.get("platformIcon"))
-                                .description((String) course.get("description"))
-                                .relevanceScore(course.get("relevanceScore") != null ? 
-                                        ((Number) course.get("relevanceScore")).doubleValue() : 0.8)
-                                .build();
-                        
-                        log.info("✅ Mapped course: {} for skill: {}", courseRec.getTitle(), courseRec.getSkillName());
-                        return courseRec;
-                        
-                    } catch (Exception e) {
-                        log.error("❌ Error mapping individual course: {}", e.getMessage());
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-        
-        log.info("🎯 Successfully mapped {} courses", courses.size());
-        return courses;
-        
-    } catch (Exception e) {
-        log.error("❌ Error extracting courses from ML response: {}", e.getMessage());
-        log.error("Stack trace:", e);
-        return new ArrayList<>();
     }
-}
     
     private List<LearningPathStep> extractLearningPathwayFromMlResponse(Map<String, Object> mlResponse) {
         try {

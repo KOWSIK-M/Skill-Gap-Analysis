@@ -20,12 +20,16 @@ spring.servlet.multipart.max-request-size=5MB
 
 # MongoDB Configuration
 
-spring.data.mongodb.host=localhost
-spring.data.mongodb.port=27017
-spring.data.mongodb.database=workskillai
-spring.data.mongodb.authentication-database=admin
+#spring.data.mongodb.host=localhost
+#spring.data.mongodb.port=27017
+#spring.data.mongodb.database=workskillai
+#spring.data.mongodb.authentication-database=admin
+
+
 
 # Logging
 
 logging.level.org.springframework.data.mongodb.core.MongoTemplate=DEBUG
 logging.level.org.springframework.web=INFO
+
+python.ml.service.url=http://localhost:8000

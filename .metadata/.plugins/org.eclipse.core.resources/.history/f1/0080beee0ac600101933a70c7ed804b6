@@ -25,8 +25,6 @@ spring.servlet.multipart.max-request-size=5MB
 #spring.data.mongodb.database=workskillai
 #spring.data.mongodb.authentication-database=admin
 
-spring.data.mongodb.uri=${MONGODB_URI}
-
 # Logging
 
 logging.level.org.springframework.data.mongodb.core.MongoTemplate=DEBUG

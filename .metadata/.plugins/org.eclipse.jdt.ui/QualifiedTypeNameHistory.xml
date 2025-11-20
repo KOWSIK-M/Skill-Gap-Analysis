@@ -16,10 +16,8 @@
     <fullyQualifiedTypeName name="jakarta.annotation.PostConstruct"/>
     <fullyQualifiedTypeName name="com.cp.workskillai.service.UserSkillService"/>
     <fullyQualifiedTypeName name="com.cp.workskillai.service.GeminiExamService"/>
-    <fullyQualifiedTypeName name="com.cp.workskillai.models.SkillGapAnalysis"/>
     <fullyQualifiedTypeName name="org.springframework.web.bind.annotation.RestController"/>
     <fullyQualifiedTypeName name="org.springframework.web.bind.annotation.RequestMapping"/>
-    <fullyQualifiedTypeName name="com.cp.workskillai.repository.StudentRepository"/>
     <fullyQualifiedTypeName name="com.cp.workskillai.repository.UserSkillRepository"/>
     <fullyQualifiedTypeName name="org.springframework.web.bind.annotation.PathVariable"/>
     <fullyQualifiedTypeName name="org.springframework.web.bind.annotation.GetMapping"/>
@@ -32,7 +30,12 @@
     <fullyQualifiedTypeName name="com.cp.workskillai.models.UserSkill"/>
     <fullyQualifiedTypeName name="java.util.stream.Collectors"/>
     <fullyQualifiedTypeName name="org.springframework.http.HttpStatus"/>
-    <fullyQualifiedTypeName name="lombok.extern.slf4j.Slf4j"/>
     <fullyQualifiedTypeName name="lombok.RequiredArgsConstructor"/>
+    <fullyQualifiedTypeName name="com.cp.workskillai.models.SkillGapAnalysis"/>
+    <fullyQualifiedTypeName name="com.cp.workskillai.models.RecommendationResponse"/>
+    <fullyQualifiedTypeName name="lombok.extern.slf4j.Slf4j"/>
     <fullyQualifiedTypeName name="com.cp.workskillai.dto.SkillGapAnalysisRequest"/>
+    <fullyQualifiedTypeName name="com.cp.workskillai.dto.SkillGapAnalysisResponse"/>
+    <fullyQualifiedTypeName name="com.cp.workskillai.repository.StudentRepository"/>
+    <fullyQualifiedTypeName name="com.cp.workskillai.dto.CurrentRoleResponseDTO"/>
 </qualifiedTypeNameHistroy>

@@ -1,0 +1,49 @@
+# docker-compose.yml
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sga_frontend
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_SPRING_API=${VITE_SPRING_API}
+      - VITE_FASTAPI=${VITE_FASTAPI}
+    depends_on:
+      - spring
+      - mlservice
+
+  spring:
+    build:
+      context: ./workskillai
+      dockerfile: Dockerfile
+    container_name: sga_spring
+    ports:
+      - "2090:2090"
+    environment:
+      - MONGODB_URI=${MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_API_KEYS=${GEMINI_API_KEYS}
+      - HUGGINGFACE_API_KEY=${HUGGINGFACE_API_KEY}
+      - PYTHON_ML_SERVICE_URL=http://mlservice:8000
+    depends_on:
+      - mlservice
+
+  mlservice:
+    build:
+      context: ./service
+      dockerfile: Dockerfile
+    container_name: sga_mlservice
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URI=${MONGODB_URI}
+      - FRONTEND_URL=${FRONTEND_URL}
+    # if your FastAPI needs env files add:
+    # env_file:
+    #   - ./service/.env
