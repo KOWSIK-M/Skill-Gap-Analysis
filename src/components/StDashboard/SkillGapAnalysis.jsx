@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Layout from "./Layout";
 import { useTheme } from "../Home/ThemeContext";
+import API from "../Config/api";
 import {
   Target,
   Search,

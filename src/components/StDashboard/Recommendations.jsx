@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Layout from "./Layout";
+import API from "../Config/api";
 import {
   BookOpen,
   Lightbulb,

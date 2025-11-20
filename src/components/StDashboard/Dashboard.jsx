@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import Layout from "./Layout";
 import { useTheme } from "../Home/ThemeContext";
+import API from "../Config/api";
 import {
   Brain,
   Target,
