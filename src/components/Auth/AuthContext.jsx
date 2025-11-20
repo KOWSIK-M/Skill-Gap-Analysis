@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
   try {
-    const response = await fetch('http://localhost:2090/api/auth/validate', {
+    const response = await fetch(`${API.AUTH}/validate`, {
       method: 'GET',
       credentials: 'include',
     });
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, role) => {
     try {
-      const response = await fetch('http://localhost:2090/api/auth/login', {
+      const response = await fetch(`${API.AUTH}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ export const AuthProvider = ({ children }) => {
 
   const handleLogout = async (redirect = true) => {
   try {
-    await fetch('http://localhost:2090/api/auth/logout', {
+    await fetch(`${API.AUTH}/logout`, {
       method: 'POST',
       credentials: 'include',
     });

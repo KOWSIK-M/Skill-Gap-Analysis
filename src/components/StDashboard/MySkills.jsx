@@ -110,7 +110,7 @@ export default function MySkills() {
       }
 
       const response = await fetch(
-        `http://localhost:2090/api/skills/user/${userId}`,
+        `${API.SKILLS}/user/${userId}`,
         {
           method: "GET",
           headers: {
@@ -141,7 +141,7 @@ export default function MySkills() {
   const loadAnalytics = async (userId) => {
     try {
       const response = await fetch(
-        `http://localhost:2090/api/skills/user/${userId}/analytics`,
+        `${API.SKILLS}/user/${userId}/analytics`,
         {
           method: "GET",
           headers: {
@@ -210,7 +210,7 @@ export default function MySkills() {
       }
 
       const response = await fetch(
-        `http://localhost:2090/api/skills/sync-from-profile/${userId}`,
+        `${API.SKILLS}/sync-from-profile/${userId}`,
         {
           method: "POST",
           headers: {
@@ -337,7 +337,7 @@ export default function MySkills() {
       setExamGenerationLoading(true);
 
       const response = await fetch(
-        "http://localhost:2090/api/skills/generate-exam",
+        "${API.SKILLS}/generate-exam",
         {
           method: "POST",
           headers: {
@@ -494,7 +494,7 @@ export default function MySkills() {
 
         if (userId) {
           const response = await fetch(
-            `http://localhost:2090/api/skills/${currentExam.skill.id}/exam-result`,
+            `${API.SKILLS}/${currentExam.skill.id}/exam-result`,
             {
               method: "POST",
               headers: {

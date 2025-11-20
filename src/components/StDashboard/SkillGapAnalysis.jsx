@@ -433,7 +433,7 @@ export default function SkillGapAnalysis() {
     try {
       console.log("🔄 Fetching job roles from backend...");
 
-      const response = await fetch("http://localhost:8000/api/job-roles", {
+      const response = await fetch("${API.JOBROLES}", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -484,7 +484,7 @@ export default function SkillGapAnalysis() {
 
     try {
       const profileRes = await fetch(
-        `http://localhost:2090/api/user/profile/${userId}`,
+        `${API.USER}/profile/${userId}`,
         {
           credentials: "include",
         }
@@ -495,7 +495,7 @@ export default function SkillGapAnalysis() {
       }
 
       const skillsRes = await fetch(
-        `http://localhost:2090/api/skills/user/${userId}`,
+        `${API.SKILLS}/user/${userId}`,
         {
           credentials: "include",
         }
@@ -728,7 +728,7 @@ export default function SkillGapAnalysis() {
       if (!userId) return;
 
       const response = await fetch(
-        `http://localhost:2090/api/analyze/current-role/${userId}`,
+        `${API.ANALYZE}/current-role/${userId}`,
         {
           credentials: "include",
         }
@@ -751,7 +751,7 @@ export default function SkillGapAnalysis() {
       if (!userId) return;
 
       const response = await fetch(
-        `http://localhost:2090/api/analyze/history/${userId}`,
+        `${API.ANALYZE}/history/${userId}`,
         {
           credentials: "include",
         }
@@ -777,7 +777,7 @@ export default function SkillGapAnalysis() {
     try {
       const userId = getUserId();
       const response = await fetch(
-        `http://localhost:2090/api/analyze/skill-gap/${userId}`,
+        `${API.ANALYZE}/skill-gap/${userId}`,
         {
           method: "POST",
           headers: {

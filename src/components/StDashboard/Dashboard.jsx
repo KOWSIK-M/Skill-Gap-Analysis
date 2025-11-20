@@ -78,7 +78,7 @@ export default function Dashboard() {
       }
 
       const response = await fetch(
-        `http://localhost:2090/api/user/profile/${userId}`,
+        `${API.USER}/profile/${userId}`,
         {
           method: "GET",
           headers: {
@@ -154,7 +154,7 @@ export default function Dashboard() {
   const fetchDashboardData = async (userId) => {
     try {
       const response = await fetch(
-        `http://localhost:2090/api/dashboard/${userId}`,
+        `${API.DASHBOARD}/${userId}`,
         {
           method: "GET",
           headers: {

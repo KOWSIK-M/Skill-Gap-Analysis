@@ -33,4 +33,3 @@ logging.level.org.springframework.data.mongodb.core.MongoTemplate=DEBUG
 logging.level.org.springframework.web=INFO
 
 #python.ml.service.url=http://localhost:8000
-python.ml.service.url=https://workskillai-service.onrender.com/

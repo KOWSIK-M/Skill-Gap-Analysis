@@ -111,7 +111,7 @@ const [certificates, setCertificates] = useState({});
       }
 
       const response = await fetch(
-        `http://localhost:2090/api/recommendations/user/${userId}`,
+        `${API.RECOMMENDATIONS}/user/${userId}`,
         {
           credentials: "include",
         }
@@ -187,7 +187,7 @@ const [certificates, setCertificates] = useState({});
       if (userId) {
         // Save to backend
         await fetch(
-          `http://localhost:2090/api/recommendations/save-enrollment?userId=${userId}&courseId=${courseId}&courseTitle=${encodeURIComponent(
+          `${API.RECOMMENDATIONS}/save-enrollment?userId=${userId}&courseId=${courseId}&courseTitle=${encodeURIComponent(
             courseTitle
           )}`,
           {
@@ -231,7 +231,7 @@ const [certificates, setCertificates] = useState({});
       if (userId) {
         // Save to backend
         await fetch(
-          `http://localhost:2090/api/recommendations/save-course?userId=${userId}&courseId=${courseId}&courseTitle=${encodeURIComponent(
+          `${API.RECOMMENDATIONS}/save-course?userId=${userId}&courseId=${courseId}&courseTitle=${encodeURIComponent(
             courseTitle
           )}`,
           {

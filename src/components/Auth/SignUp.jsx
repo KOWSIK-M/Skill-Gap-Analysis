@@ -252,7 +252,7 @@ const ProfessionalSignUp = () => {
         recaptchaToken: "", // You'll handle this in frontend
       };
 
-      const response = await fetch("http://localhost:2090/api/auth/signup", {
+      const response = await fetch(`${API.AUTH}/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -277,7 +277,7 @@ const ProfessionalSignUp = () => {
 
     async verifyEmail(token) {
       const response = await fetch(
-        `http://localhost:8080/api/auth/verify-email?token=${token}`
+        `${API.AUTH}/verify-email?token=${token}`
       );
 
       if (!response.ok) {
@@ -289,7 +289,7 @@ const ProfessionalSignUp = () => {
 
     async resendVerification(email) {
       const response = await fetch(
-        "http://localhost:8080/api/auth/resend-verification",
+        `${API.AUTH}/resend-verification`,
         {
           method: "POST",
           headers: {

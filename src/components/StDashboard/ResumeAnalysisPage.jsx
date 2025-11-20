@@ -113,7 +113,7 @@ const ResumeAnalysisPage = () => {
   const loadUserProfile = async (userId) => {
     try {
       const response = await fetch(
-        `http://localhost:2090/api/profile/${userId}`,
+        `${API.PROFILE}/${userId}`,
         {
           method: "GET",
           credentials: "include",
@@ -144,7 +144,7 @@ const ResumeAnalysisPage = () => {
   const loadResumeHistory = async (userId) => {
     try {
       const response = await fetch(
-        `http://localhost:2090/api/profile/${userId}/resumes/history`,
+        `${API.PROFILE}/${userId}/resumes/history`,
         {
           method: "GET",
           credentials: "include",
@@ -199,7 +199,7 @@ const ResumeAnalysisPage = () => {
       formData.append("file", file);
 
       const response = await fetch(
-        `http://localhost:2090/api/profile/${userId}/resume/upload`,
+        `${API.PROFILE}/${userId}/resume/upload`,
         {
           method: "POST",
           headers: {
@@ -274,7 +274,7 @@ const ResumeAnalysisPage = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:2090/api/profile/resumes/${resume.id}/reanalyze`,
+        `${API.PROFILE}/resumes/${resume.id}/reanalyze`,
         {
           method: "POST",
           headers: {
@@ -318,7 +318,7 @@ const ResumeAnalysisPage = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:2090/api/profile/${userId}/resumes/${resumeId}`,
+        `${API.PROFILE}/${userId}/resumes/${resumeId}`,
         {
           method: "DELETE",
           headers: {
@@ -343,7 +343,7 @@ const ResumeAnalysisPage = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:2090/api/profile/${userId}/resumes/${resumeId}/active`,
+        `${API.PROFILE}/${userId}/resumes/${resumeId}/active`,
         {
           method: "PUT",
           headers: {
@@ -460,7 +460,7 @@ const ResumeAnalysisPage = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:2090/api/profile/${userId}`,
+        `${API.PROFILE}/${userId}`,
         {
           method: "PUT",
           headers: {
