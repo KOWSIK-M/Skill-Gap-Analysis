@@ -912,7 +912,7 @@ const ProfessionalSignUp = () => {
               {/* reCAPTCHA */}
               <div className="recaptcha-container flex justify-center transform transition-all duration-300 hover:scale-105">
                 <ReCAPTCHA
-                  sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                  sitekey="6LfxMxMsAAAAAKZo1wqj8KYCwskdo_aN8aOCJeOA"
                   onChange={handleCaptchaChange}
                 />
               </div>
