@@ -15,8 +15,12 @@ RUN npm run build
 
 # Production stage - serve with nginx
 FROM nginx:alpine
-# remove default nginx content
-RUN rm -rf /usr/share/nginx/html/*
+# Remove default nginx site
+RUN rm -rf /etc/nginx/conf.d/default.conf
+
+# Add custom config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Optional: copy a custom nginx conf if you want (not required)
