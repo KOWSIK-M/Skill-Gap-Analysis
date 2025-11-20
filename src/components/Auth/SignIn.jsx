@@ -17,7 +17,7 @@ const ProfessionalSignIn = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      navigate("/dashboard");
     }
   }, [isAuthenticated, navigate]);
 
@@ -176,10 +176,10 @@ const ProfessionalSignIn = () => {
 
     try {
       const result = await login(email.trim(), password, role);
-      
+
       if (result.success) {
         console.log("Login successful:", result.data);
-        
+
         // Redirect based on role - the navigation will happen automatically
         // because isAuthenticated will change and trigger the useEffect
       } else {
@@ -192,7 +192,7 @@ const ProfessionalSignIn = () => {
       setIsLoading(false);
     }
   };
-  
+  console.log("ReCAPTCHA Site Key:", import.meta.env.VITE_RECAPTCHA_SITE_KEY);
   return (
     <div
       className={`min-h-screen flex flex-col transition-colors duration-500 ${
