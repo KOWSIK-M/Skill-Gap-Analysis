@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.VITE_BACKEND_URL || "http://localhost:2090";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:2090";
 
 export default {
   AUTH: `${API_BASE_URL}/api/auth`,
@@ -8,6 +8,6 @@ export default {
   RECOMMENDATIONS: `${API_BASE_URL}/api/recommendations`,
   PROFILE: `${API_BASE_URL}/api/profile`,
   ANALYZE: `${API_BASE_URL}/api/analyze`,
-  JOBROLES: process.env.VITE_JOBROLE_SERVICE_URL || "http://localhost:8000/api/job-roles",
-  SKILLSERVICE: process.env.VITE_SERVICE_URL || "http://localhost:8000"
+  JOBROLES: import.meta.env.VITE_JOBROLE_SERVICE_URL || "http://localhost:8000/api/job-roles",
+  SKILLSERVICE: import.meta.env.VITE_SERVICE_URL || "http://localhost:8000"
 };
