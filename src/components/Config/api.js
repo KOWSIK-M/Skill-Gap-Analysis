@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://workskillai-backend.onrender.com";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default {
   AUTH: `${API_BASE_URL}/api/auth`,
