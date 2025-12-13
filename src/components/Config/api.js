@@ -1,4 +1,4 @@
-const API_BASE_URL = /*import.meta.env.VITE_BACKEND_URL || */ "http://localhost:2090";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default {
   AUTH: `${API_BASE_URL}/api/auth`,
@@ -8,5 +8,7 @@ export default {
   RECOMMENDATIONS: `${API_BASE_URL}/api/recommendations`,
   PROFILE: `${API_BASE_URL}/api/profile`,
   ANALYZE: `${API_BASE_URL}/api/analyze`,
-  SKILLSERVICE: import.meta.env.VITE_SERVICE_URL || "https://workskillai-service.onrender.com/"
+  SKILLSERVICE:
+    import.meta.env.VITE_SERVICE_URL ||
+    "https://workskillai-service.onrender.com/",
 };
