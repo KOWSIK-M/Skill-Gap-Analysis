@@ -434,12 +434,15 @@ export default function SkillGapAnalysis() {
     try {
       console.log("🔄 Fetching job roles from backend...");
 
-      const response = await fetch(import.meta.env.VITE_SERVICE_URL, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_SERVICE_URL}/api/job-roles`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       console.log("📡 Response status:", response.status);
 
@@ -484,23 +487,17 @@ export default function SkillGapAnalysis() {
     }
 
     try {
-      const profileRes = await fetch(
-        `${API.USER}/profile/${userId}`,
-        {
-          credentials: "include",
-        }
-      );
+      const profileRes = await fetch(`${API.USER}/profile/${userId}`, {
+        credentials: "include",
+      });
       if (profileRes.ok) {
         const profileJson = await profileRes.json();
         setUserProfile(profileJson);
       }
 
-      const skillsRes = await fetch(
-        `${API.SKILLS}/user/${userId}`,
-        {
-          credentials: "include",
-        }
-      );
+      const skillsRes = await fetch(`${API.SKILLS}/user/${userId}`, {
+        credentials: "include",
+      });
       if (skillsRes.ok) {
         const skillsJson = await skillsRes.json();
         setUserSkills(skillsJson);
@@ -728,12 +725,9 @@ export default function SkillGapAnalysis() {
       const userId = getUserId();
       if (!userId) return;
 
-      const response = await fetch(
-        `${API.ANALYZE}/current-role/${userId}`,
-        {
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`${API.ANALYZE}/current-role/${userId}`, {
+        credentials: "include",
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -751,12 +745,9 @@ export default function SkillGapAnalysis() {
       const userId = getUserId();
       if (!userId) return;
 
-      const response = await fetch(
-        `${API.ANALYZE}/history/${userId}`,
-        {
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`${API.ANALYZE}/history/${userId}`, {
+        credentials: "include",
+      });
 
       if (response.ok) {
         const history = await response.json();
@@ -777,19 +768,16 @@ export default function SkillGapAnalysis() {
 
     try {
       const userId = getUserId();
-      const response = await fetch(
-        `${API.ANALYZE}/skill-gap/${userId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            jobRole: selectedRole,
-          }),
-        }
-      );
+      const response = await fetch(`${API.ANALYZE}/skill-gap/${userId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          jobRole: selectedRole,
+        }),
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -1595,9 +1583,7 @@ export default function SkillGapAnalysis() {
                 </div>
 
                 <div className="mt-4">
-                  <h4 className="text-lg font-semibold">
-                    Analysis Overview
-                  </h4>
+                  <h4 className="text-lg font-semibold">Analysis Overview</h4>
                   <div className="grid grid-cols-2 gap-4 mt-2">
                     <div
                       className={`p-4 rounded-lg shadow ${
@@ -1643,9 +1629,7 @@ export default function SkillGapAnalysis() {
                       <div className="text-sm font-medium text-gray-300">
                         Time to Close Gap
                       </div>
-                      <div className="text-2xl font-bold">
-                        {timeToCloseGap}
-                      </div>
+                      <div className="text-2xl font-bold">{timeToCloseGap}</div>
                     </div>
                     <div
                       className={`p-4 rounded-lg shadow ${
@@ -1655,9 +1639,7 @@ export default function SkillGapAnalysis() {
                       <div className="text-sm font-medium text-gray-300">
                         Salary Impact
                       </div>
-                      <div className="text-2xl font-bold">
-                        {salaryImpact}
-                      </div>
+                      <div className="text-2xl font-bold">{salaryImpact}</div>
                     </div>
                     <div
                       className={`p-4 rounded-lg shadow ${
@@ -1828,9 +1810,7 @@ export default function SkillGapAnalysis() {
                           : "bg-white text-gray-900"
                       }`}
                     >
-                      <div className="text-sm font-medium">
-                        {data.skill}
-                      </div>
+                      <div className="text-sm font-medium">{data.skill}</div>
                       <div className="flex justify-between items-center mt-2">
                         <div className="text-2xl font-bold">{data.demand}%</div>
                         <div
