@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://workskillai-backend.onrender.com/";
+const API_BASE_URL = "https://workskillai-backend.onrender.com";
 
 export default {
   AUTH: `${API_BASE_URL}/api/auth`,
