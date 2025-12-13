@@ -1,0 +1,26 @@
+{
+  "model_performance": {
+    "skill_similarity_mean": 0.7,
+    "skill_similarity_consistency": 0.8,
+    "skill_pairs_evaluated": 0,
+    "cv_accuracy": 0.5,
+    "cv_std": 0.21602468994692867,
+    "test_accuracy": 0.5,
+    "test_precision": 0.5,
+    "test_recall": 0.5,
+    "test_f1": 0.5,
+    "classification_available": true,
+    "course_recommendation_precision": 1.0,
+    "course_evaluation_queries": 4
+  },
+  "dataset_statistics": {
+    "job_roles_count": 48,
+    "unique_skills_count": 693,
+    "total_courses": 6518
+  },
+  "research_contributions": {
+    "approach": "Hybrid ML system for skill gap analysis",
+    "innovation": "Combines skill similarity, job matching, and course recommendations",
+    "practicality": "Works with real-world job market data"
+  }
+}

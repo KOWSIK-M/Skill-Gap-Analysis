@@ -434,7 +434,7 @@ export default function SkillGapAnalysis() {
     try {
       console.log("🔄 Fetching job roles from backend...");
 
-      const response = await fetch("${API.JOBROLES}", {
+      const response = await fetch("http://localhost:8000/api/job-roles", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

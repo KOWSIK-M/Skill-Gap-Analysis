@@ -96,33 +96,25 @@ function App() {
           <Route
             path="/hrdashboard"
             element={
-              <ProtectedRoute>
                 <HrDashboard />
-              </ProtectedRoute>
             }
           />
           <Route
             path="/rolemanagement"
             element={
-              <ProtectedRoute>
                 <RoleManagement />
-              </ProtectedRoute>
             }
           />
           <Route
             path="/applications"
             element={
-              <ProtectedRoute>
                 <ApplicationsReview />
-              </ProtectedRoute>
             }
           />
           <Route
             path="/employeeanalytics"
             element={
-              <ProtectedRoute>
                 <EmployeeAnalytics />
-              </ProtectedRoute>
             }
           />
         </Routes>

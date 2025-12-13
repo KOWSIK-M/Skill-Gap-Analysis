@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || "https://workskillai-backend.onrender.com";
+const API_BASE_URL = /*import.meta.env.VITE_BACKEND_URL || */ "http://localhost:2090";
 
 export default {
   AUTH: `${API_BASE_URL}/api/auth`,
@@ -8,6 +8,5 @@ export default {
   RECOMMENDATIONS: `${API_BASE_URL}/api/recommendations`,
   PROFILE: `${API_BASE_URL}/api/profile`,
   ANALYZE: `${API_BASE_URL}/api/analyze`,
-  JOBROLES: import.meta.env.VITE_JOBROLE_SERVICE_URL || "https://workskillai-service.onrender.com/api/job-roles",
   SKILLSERVICE: import.meta.env.VITE_SERVICE_URL || "https://workskillai-service.onrender.com/"
 };

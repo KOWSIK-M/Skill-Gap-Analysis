@@ -395,30 +395,47 @@ const WorkSkillAILanding = () => {
                 ))}
                 
                 <div className="pt-4 pb-3 border-t border-gray-700">
-                  <div className="flex items-center px-5">
-                    <div className="flex-shrink-0">
-                      <div className={`h-10 w-10 rounded-full flex items-center justify-center ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} transition-colors`}>
-                        <span className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} font-medium`}>U</span>
-                      </div>
-                    </div>
-                    <div className="ml-3">
-                      <div className={`text-base font-medium ${darkMode ? 'text-white' : 'text-gray-900'} transition-colors`}>User Account</div>
-                      <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'} transition-colors`}>user@example.com</div>
-                    </div>
-                  </div>
-                  <div className="mt-3 px-2 space-y-1">
-                    <button className={`block px-3 py-2 rounded-md text-base font-medium w-full text-left ${darkMode ? 'text-gray-300 hover:text-white hover:bg-gray-700/50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'} transition-colors`}>
-                      Your Profile
-                    </button>
-                    <button className={`block px-3 py-2 rounded-md text-base font-medium w-full text-left ${darkMode ? 'text-gray-300 hover:text-white hover:bg-gray-700/50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'} transition-colors`}>
-                      Settings
-                    </button>
-                    <button className={`block px-3 py-2 rounded-md text-base font-medium w-full text-left ${darkMode ? 'text-gray-300 hover:text-white hover:bg-gray-700/50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'} transition-colors`}>
-                      Sign out
-                    </button>
-                  </div>
-                </div>
-              </div>
+  <div className="px-2 space-y-3">
+    {/* Login/Register Button */}
+    <button
+      onClick={() => {
+        setMobileMenuOpen(false);
+        window.location.href = "/signin";
+      }}
+      className={`w-full px-4 py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${
+        darkMode 
+          ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700" 
+          : "bg-gradient-to-r from-blue-400 to-purple-500 text-white hover:from-blue-500 hover:to-purple-600"
+      } transition-all duration-300 shadow-md hover:shadow-lg`}
+    >
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+      </svg>
+      Login / Register
+    </button>
+    
+    {/* Alternative Options */}
+    <div className="text-center">
+      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'} mb-2 transition-colors`}>
+        Or try our demo
+      </p>
+      <button
+        onClick={() => {
+          setMobileMenuOpen(false);
+          // Add demo navigation logic here
+        }}
+        className={`text-sm px-4 py-2 rounded-md font-medium w-full ${
+          darkMode 
+            ? 'text-emerald-400 border border-emerald-400/30 hover:bg-emerald-400/10' 
+            : 'text-emerald-600 border border-emerald-500/30 hover:bg-emerald-50'
+        } transition-colors`}
+      >
+        Try Demo Version
+      </button>
+    </div>
+  </div>
+</div>
+</div>
             </motion.div>
           )}
         </AnimatePresence>

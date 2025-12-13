@@ -189,3 +189,33 @@ body.light {
 .dark .scrollbar-thin {
   scrollbar-color: #60a5fa #374151;
 }
+
+.btn-clean {
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-clean.dark {
+  background: linear-gradient(to right, #3b82f6, #8b5cf6);
+  color: white;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.btn-clean.dark:hover {
+  background: linear-gradient(to right, #2563eb, #7c3aed);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.btn-clean.light {
+  background: linear-gradient(to right, #60a5fa, #a78bfa);
+  color: white;
+  box-shadow: 0 4px 15px rgba(96, 165, 250, 0.3);
+}
+
+.btn-clean.light:hover {
+  background: linear-gradient(to right, #3b82f6, #8b5cf6);
+  box-shadow: 0 6px 20px rgba(96, 165, 250, 0.4);
+}
