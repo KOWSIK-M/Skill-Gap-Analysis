@@ -20,16 +20,18 @@ public class JwtCookieService {
                 .path("/")
                 .maxAge(jwtExpirationMs / 1000)
                 .sameSite("None")
+                .domain(cookieDomain)
                 .build();
     }
 
     public ResponseCookie createLogoutCookie() {
         return ResponseCookie.from("jwt", "")
-        		.httpOnly(true)
-                .secure(true)
-                .sameSite("None")
+                .httpOnly(true)
+                .secure(false)
                 .path("/")
                 .maxAge(0)
+                .sameSite("Lax")
+                .domain(cookieDomain)
                 .build();
     }
 }

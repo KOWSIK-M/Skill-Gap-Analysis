@@ -30,8 +30,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/profile/**").permitAll()
-                .requestMatchers("/api/dashboard/**").permitAll()
-                .requestMatchers("/api/user/profile/**").authenticated()
+                .requestMatchers("/api/dashboard/**").permitAll().requestMatchers("/api/user/profile/**").permitAll()
                 .requestMatchers("/api/user/**").authenticated()
                 .requestMatchers("/api/skills/**").permitAll()
                 .requestMatchers("/api/analyze/**").permitAll()
