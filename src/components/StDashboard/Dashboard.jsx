@@ -158,9 +158,6 @@ export default function Dashboard() {
         `${API.DASHBOARD}/${userId}`,
         {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
           credentials: "include",
         }
       );
