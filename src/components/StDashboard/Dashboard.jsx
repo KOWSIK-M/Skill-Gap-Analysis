@@ -47,19 +47,45 @@ export default function Dashboard() {
   const [showProfilePrompt, setShowProfilePrompt] = useState(false);
   const navigate = useNavigate();
 
-  // Function to get user ID from localStorage
   const getUserId = () => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      try {
+    try {
+      // Try multiple storage locations
+      const userData =
+        localStorage.getItem("user") ||
+        sessionStorage.getItem("user") ||
+        localStorage.getItem("userData") ||
+        sessionStorage.getItem("userData");
+
+      if (userData) {
         const user = JSON.parse(userData);
-        return user.id || user.userId || user._id;
-      } catch (error) {
-        console.error("Error parsing user data:", error);
+        console.log("Found user data:", user);
+        return user.id || user.userId || user._id || user.sub;
       }
+
+      // Check if there's a JWT token in cookies (for HTTP-only)
+      const cookies = document.cookie.split(";");
+      const tokenCookie = cookies.find((cookie) =>
+        cookie.trim().startsWith("token=")
+      );
+
+      if (tokenCookie) {
+        const token = tokenCookie.split("=")[1];
+        try {
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          return payload.sub || payload.userId || payload.id;
+        } catch (e) {
+          console.warn("Could not decode JWT token");
+        }
+      }
+
+      console.warn("User data not found in any storage");
+      return null;
+    } catch (error) {
+      console.error("Error getting user ID:", error);
+      return null;
     }
-    return null;
   };
+
 
   useEffect(() => {
     checkUserProfile();
@@ -158,6 +184,9 @@ export default function Dashboard() {
         `${API.DASHBOARD}/${userId}`,
         {
           method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
           credentials: "include",
         }
       );
