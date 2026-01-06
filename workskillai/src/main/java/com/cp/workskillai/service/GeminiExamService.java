@@ -7,7 +7,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.InitializingBean;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class GeminiExamService {
+public class GeminiExamService implements InitializingBean {
     
     private final RestTemplate restTemplate;
     
@@ -41,8 +41,8 @@ public class GeminiExamService {
     private final int MAX_REQUESTS_PER_KEY = 50; // Conservative limit for free tier
     private final int MAX_REQUESTS_PER_MODEL = 15; // Conservative limit per model
     
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         // Initialize usage counters
         if (geminiApiKeys != null && !geminiApiKeys.isEmpty()) {
             String[] keys = geminiApiKeys.split(",");
@@ -53,11 +53,11 @@ public class GeminiExamService {
                 }
             }
         }
-        
+
         for (String model : freeGeminiModels) {
             modelUsage.put(model, new AtomicInteger(0));
         }
-        
+
         log.info("Initialized Gemini service with {} API keys and {} models", 
                  apiKeyUsage.size(), freeGeminiModels.size());
     }
